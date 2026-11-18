@@ -1,4 +1,26 @@
-# JevDuo · OSWorld 2.1 集群测评
+<h1 align="center">JevDuo</h1>
+
+<p align="center"><strong>A fast–slow harness for computer use.</strong></p>
+
+<p align="center">Slow models plan. JEV selects. Tools execute.</p>
+
+<p align="center">
+  <a href="https://xxxyxun.github.io/jevduo/">Project Page</a> ·
+  <a href="https://xxxyxun.github.io/jevduo/#video">Watch in browser</a> ·
+  <a href="https://xxxyxun.github.io/jevduo/downloads/JevDuo-v15-4K.mp4">Download 4K</a>
+</p>
+
+https://github.com/user-attachments/assets/10b12e6d-1612-415f-8016-2fc035398837
+
+<details>
+<summary>About this demonstration</summary>
+
+The film combines harness mechanism animation with historical NorthCUA / BrickLink Studio recordings.
+The interactive 3D presentation reconstructs assembly and replays recorded simulation; it is not a live JEV evaluation.
+
+</details>
+
+## OSWorld 2.1 集群测评
 
 在 OSWorld 2.1 上用上游 CUA harness 跑 agent 测评，通过内部集群的 `rjob` 提交任务。
 本分支是**测评工程分支**，与 `main`（JevDuo harness 本体）相互独立，不 merge、不 rebase。
