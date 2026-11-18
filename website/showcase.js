@@ -48,6 +48,107 @@
   };
   let scenario = "gui", step = 0, loopRunning = !reducedMotion, loopTimer = null;
   const visibleLoopSections = new Set();
+  const scene = document.querySelector(".system-scene");
+  const story = $("story");
+  const stickyStory = matchMedia("(min-width:1000px) and (min-height:820px) and (prefers-reduced-motion:no-preference)");
+  const storyFrames = [
+    ["先想清楚，再交出一个目标。", "慢模型提供准确输入和返回条件，不预编整段点击。"],
+    ["让合适的执行器接手。", "GUI、CLI 和扩展工具，共享同一份目标与执行反馈。"],
+    ["同一个目标，连续选择。", "JEV 每次依据新观察选择动作，减少逐动作的慢模型往返与长文本生成。"],
+    ["带着证据，才决定下一步。", "完成、遇阻或缺少信息时返回；独立验证后更新记忆，继续或结束。"],
+  ];
+  let storyPhase = -1, storyAction = -1, scrollQueued = false, manualCamera = false;
+
+  function drawConnections() {
+    const svg = scene.querySelector(".scene-connections"), bounds = svg.getBoundingClientRect();
+    svg.setAttribute("viewBox", `0 0 ${bounds.width} ${bounds.height}`);
+    const box = name => {
+      const rect = scene.querySelector(`[data-node="${name}"]`).getBoundingClientRect();
+      return {x:rect.x - bounds.x, y:rect.y - bounds.y, w:rect.width, h:rect.height};
+    };
+    const task = box("task"), plan = box("plan"), goal = box("goal"), route = box("route"), runtime = box("runtime");
+    const cx = node => node.x + node.w / 2, bottom = node => node.y + node.h;
+    const goalBus = (bottom(goal) + route.y) / 2;
+    const wires = [
+      ["task", `M${cx(plan)} ${bottom(task) + 3}V${plan.y - 5}`, storyPhase === 0],
+      ["goal", `M${plan.x + plan.w + 3} ${plan.y + plan.h / 2}H${goal.x - 6}`, storyPhase === 0],
+      ["route", `M${cx(goal)} ${bottom(goal) + 3}V${goalBus}H${cx(route)}V${route.y - 5}`, storyPhase === 1],
+    ];
+    for (const name of ["cli", "jev", "extension"]) {
+      const worker = box(name), bus = bottom(route) + 8, out = runtime.y - 12;
+      const selected = name === "jev" && (storyPhase === 1 || storyPhase === 2);
+      wires.push([name, `M${cx(route)} ${bottom(route) + 2}V${bus}H${cx(worker)}V${worker.y - 5}`, selected]);
+      wires.push([`${name}-result`, `M${cx(worker)} ${bottom(worker) + 2}V${out}H${cx(worker)}V${runtime.y - 5}`, name === "jev" && storyPhase >= 2]);
+    }
+    const jev = box("jev"), localX = cx(jev) + jev.w * .24;
+    wires.push(["local", `M${localX} ${runtime.y - 3}V${bottom(jev) + 5}`, storyPhase === 2]);
+    const edge = Math.max(11, plan.x * .4);
+    wires.push(["return", `M${runtime.x - 2} ${runtime.y + runtime.h / 2}H${edge + 6}Q${edge} ${runtime.y + runtime.h / 2} ${edge} ${runtime.y + runtime.h / 2 - 6}V${plan.y + plan.h / 2 + 6}Q${edge} ${plan.y + plan.h / 2} ${edge + 6} ${plan.y + plan.h / 2}H${plan.x - 5}`, storyPhase === 3]);
+    $("scene-wires").innerHTML = wires.map(([name, path, active]) => `<path class="wire-halo" d="${path}"/><path data-wire="${name}" class="scene-wire ${name === "return" || name === "local" ? name : ""} ${active ? "active" : ""}" d="${path}"/>`).join("");
+  }
+
+  function setStory(phase, action = 0) {
+    if (phase === storyPhase && action === storyAction) return;
+    storyPhase = phase; storyAction = action;
+    $("story-index").textContent = `0${phase + 1} / 04`;
+    $("story-title").textContent = storyFrames[phase][0];
+    $("story-description").textContent = storyFrames[phase][1];
+    document.querySelectorAll("[data-story]").forEach(button => button.setAttribute("aria-pressed", String(+button.dataset.story === phase)));
+    scene.dataset.phase = phase;
+    scene.classList.toggle("planning", phase === 0);
+    scene.classList.toggle("working", phase === 2);
+    scene.classList.toggle("verifying", phase === 3);
+    scene.querySelector(".worker.jev").classList.toggle("selected-worker", phase === 1 || phase === 2);
+    $("hero-status").textContent = phase === 2 ? `同一子目标 · 第 ${action + 1} 次选择 · 每次都有新观察` : phase === 3 ? "完成或遇阻时，带证据返回上层。" : phase === 1 ? "选中 GUI 路径；其他执行器保持可用。" : "上层给出目标、准确输入和返回条件。";
+    drawConnections();
+  }
+
+  function updateScroll() {
+    scrollQueued = false;
+    if (stickyStory.matches) {
+      const rect = story.getBoundingClientRect();
+      const progress = Math.max(0, Math.min(1, -rect.top / (rect.height - innerHeight)));
+      const phase = progress < .18 ? 0 : progress < .34 ? 1 : progress < .86 ? 2 : 3;
+      setStory(phase, phase === 2 ? Math.min(4, Math.floor((progress - .34) / .104)) : 0);
+      scene.style.setProperty("--scene-y", `${-Math.sin(progress * Math.PI) * 9}px`);
+    } else scene.style.removeProperty("--scene-y");
+    if (!reducedMotion) {
+      const filmRect = $("film-player").getBoundingClientRect();
+      const entrance = Math.max(0, Math.min(1, (innerHeight - filmRect.top) / (innerHeight * .65)));
+      document.querySelector(".film-wrap").style.setProperty("--film-scale", .96 + entrance * .04);
+      if (viewer && !manualCamera) {
+        const rect = $("result").getBoundingClientRect();
+        const progress = Math.max(0, Math.min(1, (innerHeight - rect.top) / innerHeight));
+        viewer.setCamera({yaw:-1.4 + progress * .2, elevation:.6 - progress * .05});
+      }
+    }
+  }
+  function queueScroll() {
+    if (!scrollQueued) { scrollQueued = true; requestAnimationFrame(updateScroll); }
+  }
+  addEventListener("scroll", queueScroll, {passive:true});
+  addEventListener("resize", () => { drawConnections(); queueScroll(); });
+  new ResizeObserver(drawConnections).observe(scene);
+  document.querySelectorAll("[data-story]").forEach(button => {
+    button.onclick = () => {
+      const phase = +button.dataset.story;
+      if (stickyStory.matches) {
+        const progress = [0, .24, .52, .94][phase];
+        scrollTo({top:scrollY + story.getBoundingClientRect().top + (story.offsetHeight - innerHeight) * progress, behavior:"smooth"});
+      } else setStory(phase);
+    };
+  });
+  setStory(0);
+
+  if (!reducedMotion) {
+    document.documentElement.classList.add("motion-enabled");
+    const reveal = new IntersectionObserver(entries => entries.forEach(entry => {
+      if (entry.isIntersecting) { entry.target.classList.add("revealed"); reveal.unobserve(entry.target); }
+    }), {threshold:.12});
+    document.querySelectorAll(".section-heading, .scenario-tabs, .loop-panel, .result-copy, .closing").forEach(node => {
+      node.dataset.reveal = ""; reveal.observe(node);
+    });
+  }
 
   function renderLoop() {
     const current = scenarios[scenario], frame = current.steps[step];
@@ -63,14 +164,6 @@
     const actions = current.steps.filter(entry => entry.rail === "execute").slice(0, 5);
     const passed = current.steps.slice(0, step).filter(entry => entry.rail === "execute").length;
     $("action-timeline").innerHTML = actions.map((entry, i) => `<div class="action-step ${i < passed ? "done" : i === passed && frame.rail === "execute" ? "active" : ""}"><span>STEP ${i + 1}</span><strong>${entry.name}</strong></div>`).join("");
-    document.querySelectorAll("[data-rail]").forEach(node => node.classList.toggle("active", node.dataset.rail === frame.rail));
-    const scene = document.querySelector(".system-scene");
-    scene.classList.toggle("planning", frame.rail === "plan");
-    scene.classList.toggle("working", frame.rail === "execute");
-    scene.classList.toggle("verifying", frame.rail === "verify");
-    scene.querySelector(".worker.cli").classList.toggle("selected-worker", frame.route.includes("CLI"));
-    scene.querySelector(".worker.jev").classList.toggle("selected-worker", frame.route.includes("JEV"));
-    $("hero-status").textContent = frame.rail === "execute" ? "同一子目标内，依据新观察持续选择。" : frame.rail === "verify" ? "带执行证据返回，检查后再继续。" : "上层给出目标，局部执行持续推进。";
     $("loop-play").innerHTML = loopRunning ? "暂停 <span>Ⅱ</span>" : "播放 <span>▶</span>";
     $("loop-play").setAttribute("aria-label", loopRunning ? "暂停机制演示" : "播放机制演示");
     clearTimeout(loopTimer);
@@ -106,7 +199,7 @@
     });
     renderLoop();
   });
-  loopObserver.observe(document.querySelector(".hero")); loopObserver.observe($("execution"));
+  loopObserver.observe($("execution"));
   renderLoop();
 
   let presentation, videos = {}, activeLane = "a", caseTime = 0, casePlaying = false, grid = false;
@@ -199,6 +292,11 @@
     new IntersectionObserver(entries => { if (!entries[0].isIntersecting) playCase(false); }).observe($("case-workspace"));
     renderCase();
   }
+  let casePromise = null;
+  $("execution-records").ontoggle = () => {
+    if (!$("execution-records").open) { playCase(false); return; }
+    if (!casePromise) casePromise = initCase().catch(() => { $("workspace-phase").textContent = "案例素材暂未加载，请检查网络连接。"; });
+  };
 
   function updateModel(state) {
     $("model-gear").textContent = state.label;
@@ -215,6 +313,8 @@
     $("model-loading").remove();
     viewer = window.GearboxViewer.create($("model-mount"), {theme:"atlas", onUpdate:updateModel});
     viewer.setMode("motion"); viewer.play(false);
+    viewer.canvas.addEventListener("pointerdown", () => { manualCamera = true; });
+    $("result").addEventListener("focusin", () => { manualCamera = true; });
     window.gearboxData.labels.forEach((label, index) => {
       const button = document.createElement("button");
       button.textContent = label; button.dataset.gear = index;
@@ -239,7 +339,7 @@
         document.querySelectorAll("[data-view]").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
       };
     });
-    updateModel(viewer.snapshot());
+    updateModel(viewer.snapshot()); queueScroll();
   }
 
   new IntersectionObserver(entries => {
@@ -257,6 +357,6 @@
     renderLoop();
     if (document.hidden) { playCase(false); viewer?.play(false); film.pause(); }
   });
-  initCase().catch(() => { $("workspace-phase").textContent = "案例素材暂未加载，请检查网络连接。"; });
-  window.showcase = {selectScenario, seekCase, playCase, selectLane, get viewer() { return viewer; }, get videos() { return videos; }, state:() => ({scenario, step, loopRunning, activeLane, caseTime, casePlaying, grid})};
+  queueScroll();
+  window.showcase = {selectScenario, seekCase, playCase, selectLane, get viewer() { return viewer; }, get videos() { return videos; }, state:() => ({scenario, step, loopRunning, storyPhase, storyAction, manualCamera, activeLane, caseTime, casePlaying, grid})};
 })();
