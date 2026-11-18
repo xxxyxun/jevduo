@@ -1,16 +1,26 @@
-# JevDuo
+<h1 align="center">JevDuo</h1>
 
-**面向 Computer Use 场景的快慢双模 CUA harness。**
+<p align="center"><strong>A fast–slow harness for computer use.</strong></p>
 
-[项目主页](https://xxxyxun.github.io/jevduo/) ·
-[观看影片](https://xxxyxun.github.io/jevduo/#video) ·
-[下载 4K 原片](https://xxxyxun.github.io/jevduo/downloads/JevDuo-v15-4K.mp4) ·
-[上游仓库](https://github.com/AI45Lab/JevDuo)
+<p align="center">Slow models plan. JEV selects. Tools execute.</p>
 
-[![JevDuo 展示影片：点击观看](https://xxxyxun.github.io/jevduo/assets/film-poster.jpg)](https://xxxyxun.github.io/jevduo/#video)
+<p align="center">
+  <a href="https://xxxyxun.github.io/jevduo/">Project Page</a> ·
+  <a href="https://xxxyxun.github.io/jevduo/#video">Watch in browser</a> ·
+  <a href="https://xxxyxun.github.io/jevduo/downloads/JevDuo-v15-4K.mp4">Download 4K</a>
+</p>
 
-网页保留原始 C / Atlas Continuum 的交互式 3D、四路桌面记录与运动回放。
-影片包含架构机制动画；桌面装配为历史 NorthCUA 实录，运动为既有约束仿真回放。
+https://github.com/user-attachments/assets/10b12e6d-1612-415f-8016-2fc035398837
+
+<details>
+<summary>About this demonstration</summary>
+
+The film combines harness mechanism animation with historical NorthCUA / BrickLink Studio recordings.
+The interactive 3D presentation reconstructs assembly and replays recorded simulation; it is not a live JEV evaluation.
+
+</details>
+
+## Overview
 
 慢模型负责**理解与规划**——读长指令、读屏幕、读无障碍树，产出「下一步该做什么」的意图；
 快模型（JEV / Kev 这类 System One 决策模型）负责**选择**——在一个已被裁剪过的候选动作空间里，
