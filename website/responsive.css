@@ -1,7 +1,7 @@
 @media(min-width:1700px){
 .shell{width:min(1380px,calc(100% - 160px))}
 .hero-copy{padding-top:135px}
-.assembly-stage{inset:17% 3% 5%}
+.assembly-stage{top:17svh;left:3%;right:3%}
 }
 @media(max-width:1200px){
 .shell{width:calc(100% - 72px)}
@@ -40,7 +40,7 @@
 .hero{min-height:760px}
 .hero-copy{padding-top:102px}
 .hero-copy h1{font-size:91px}
-.assembly-stage{inset:21% 3% 6%}
+.assembly-stage{top:21svh;left:3%;right:3%;height:68svh;min-height:520px}
 }
 @media(max-width:999px){
 .shell{width:calc(100% - 56px)}
@@ -48,9 +48,11 @@
 .hero{min-height:830px;max-height:1080px}
 .hero-copy{padding-top:132px}
 .hero-copy h1{font-size:93px}
-.assembly-stage{inset:20% -3% 7%}
+.assembly-stage{top:20svh;left:-3%;right:-3%;height:70svh}
 .section-heading{gap:30px}
-.section-intro{font-size:16px}
+.architecture-heading{gap:15px}
+.architecture-heading h2{font-size:clamp(35px,4.6vw,47px)}
+#architecture-model-slot{width:35%;height:225px}
 .architecture-board{padding:30px 26px}
 .outer-loop-label{position:static;display:block;padding:0 0 27px;font-size:15px;background:none;text-align:center}
 .arch-topline{grid-template-columns:1fr 1fr;gap:26px}
@@ -72,8 +74,6 @@
 .loop-ring{width:34px;height:34px}
 .loop-ring svg{width:21px;height:21px}
 .architecture-wires{display:none}
-.architecture-foot{grid-template-columns:1fr;gap:18px}
-.architecture-foot>p{min-height:0}
 .execution-theater{grid-template-columns:27% 73%}
 .execution-plan{padding:25px 20px}
 .plan-name{font-size:15px}
@@ -94,13 +94,11 @@
 .execution-bottom{padding:20px}
 .action-beads{gap:18px}
 .recovery-button{font-size:14px}
-.execution-explanation{gap:30px}
 .result-section{grid-template-columns:1fr;gap:35px}
 .result-copy{display:grid;grid-template-columns:1fr 1fr;gap:0 40px}
 .result-copy .eyebrow{grid-column:1/-1}
 .result-copy h2{font-size:44px}
 .result-copy>p:not(.eyebrow){align-self:center;max-width:none;font-size:17px}
-.result-copy .result-boundary{grid-column:1/-1;max-width:none}
 .model-mount{height:380px}
 .workspace-toolbar>div>span:last-child{display:none}
 .workspace-tab{padding:15px 7px;justify-content:center}
@@ -122,13 +120,16 @@
 .hero{height:96svh;min-height:720px;max-height:950px}
 .hero-copy{padding:118px 18px 0}
 .hero-copy h1{font-size:79px;margin:15px 0 13px}
-.assembly-stage{inset:23% -12% 7%}
+.assembly-stage{top:170px;left:-12%;right:-12%;height:clamp(450px,66svh,590px)}
 .section-pad{padding-block:65px}
 .eyebrow{font-size:12px;letter-spacing:.08em}
 h2{font-size:37px;letter-spacing:-.045em;line-height:1.3}
 .section-heading{flex-direction:column;align-items:flex-start;gap:22px;margin-bottom:30px}
 .section-heading .eyebrow{margin-bottom:17px}
-.section-intro{font-size:16px;line-height:1.85}
+.architecture-section{padding-top:0}
+.architecture-heading{gap:0;margin-bottom:20px}
+.architecture-heading h2{font-size:37px}
+#architecture-model-slot{width:100%;height:210px}
 .architecture-board{border-radius:21px;padding:25px 15px}
 .outer-loop-label{font-size:14px;padding-bottom:25px}
 .arch-topline{grid-template-columns:1fr;gap:26px}
@@ -157,16 +158,11 @@ h2{font-size:37px;letter-spacing:-.045em;line-height:1.3}
 .arch-evidence>strong{font-size:16px}
 .arch-evidence>svg{width:21px;height:21px}
 .arch-evidence>span{width:100%;font-size:14px;text-align:center}
-.architecture-foot{gap:16px;margin-top:24px}
-.context-strip{font-size:13px;gap:8px}
-.context-strip>svg{width:16px;height:16px}
-.architecture-foot>p{font-size:15px}
-.execution-controls{flex-direction:column;align-items:flex-start;gap:14px;margin-bottom:20px}
+.execution-controls{flex-wrap:wrap;gap:14px;margin-bottom:20px}
 .execution-flow{width:100%;justify-content:space-between;gap:7px}
 .execution-flow>span{font-size:14px;gap:5px;padding-block:10px}
 .execution-flow>span>svg{width:17px;height:17px}
 .execution-flow>.flow-arrow{width:13px;height:13px}
-.illustration-label{font-size:14px}
 .execution-theater{grid-template-columns:1fr;border-radius:21px}
 .execution-plan{display:grid;grid-template-columns:43px 1fr;gap:0 13px;padding:22px;border-right:0;border-bottom:1px solid #e5dbdd}
 .plan-icon{width:43px;height:45px;border-radius:14px;grid-row:1/3;margin:0}
@@ -195,10 +191,7 @@ h2{font-size:37px;letter-spacing:-.045em;line-height:1.3}
 .action-bead{font-size:14px;gap:7px;min-height:35px}
 .action-bead:before{width:5px;height:5px}
 .recovery-button{font-size:14px;min-height:30px}
-.execution-explanation{flex-direction:column;gap:16px;margin-top:22px}
-.execution-explanation>p{font-size:15px;min-height:0}
 .text-link{font-size:15px}
-.film-heading-right{gap:15px}
 .film-wrap{border-radius:15px}
 .film-caption{flex-direction:column;gap:7px;font-size:13px;margin-top:16px}
 .execution-records{border-radius:15px;margin-top:26px}
@@ -232,7 +225,6 @@ h2{font-size:37px;letter-spacing:-.045em;line-height:1.3}
 .result-copy{grid-template-columns:1fr;gap:0}
 .result-copy h2{font-size:39px;margin-block:19px}
 .result-copy>p:not(.eyebrow){font-size:16px;max-width:320px}
-.result-copy .result-boundary{font-size:14px!important}
 .result-viewer{border-radius:19px}
 .result-toolbar{padding:15px 13px;gap:10px}
 .result-toolbar>div{gap:12px}
@@ -264,4 +256,5 @@ h2{font-size:37px;letter-spacing:-.045em;line-height:1.3}
 html{scroll-behavior:auto}
 *,*:before,*:after{animation:none!important;transition:none!important}
 .motion-enabled [data-reveal]{opacity:1;transform:none}
+#architecture-model-slot{display:none}
 }

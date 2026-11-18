@@ -5,7 +5,8 @@
   const icon = name => '<svg aria-hidden="true"><use href="#i-' + name + '"/></svg>';
   const reduced = matchMedia("(prefers-reduced-motion:reduce)").matches;
   const clamp = value => Math.max(0, Math.min(1, value));
-  const hero = $("story"), board = $("architecture-board"), theater = $("execution-theater");
+  const opening = $("opening"), stage = document.querySelector(".assembly-stage");
+  const slot = $("architecture-model-slot"), board = $("architecture-board"), theater = $("execution-theater");
   const actions = [
     {label:"聚焦", observation:"搜索框已出现在当前观察中", choices:["点击零件搜索框","展开其他分类","返回慢模型"], receipt:"读回焦点：搜索框已激活"},
     {label:"输入", observation:"搜索框已激活，零件编号已由慢模型提供", choices:["输入 64179","修改工程名称","重新打开零件库"], receipt:"读回字段：输入值为 64179"},
@@ -14,7 +15,7 @@
     {label:"保存", observation:"本段装配已完成，等待保存", choices:["保存当前工程","关闭未保存工程","重复放置框架"], receipt:"保存回执与最新观察已返回"},
   ];
   let viewer = null, owner = "hero", heroVisible = true, introAge = 0, introFraction = reduced ? 1 : 0;
-  let manualCamera = false, introFrame = 0, lastIntro = 0, route = "gui";
+  let manualCamera = false, introFrame = 0, lastIntro = 0, route = "gui", bridgeProgress = 0;
   let phase = "execution", action = 0, blocked = false, playing = false, loopTimer = null, loopStarted = false;
 
   function line(path, type = "") {
@@ -58,11 +59,6 @@
     route = button.dataset.route;
     board.dataset.route = route;
     board.querySelectorAll("[data-route]").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
-    $("route-explanation").textContent = route === "gui"
-      ? "同一子目标内，JEV 根据新截图与可用动作选择下一步。完成或遇阻后，再返回慢模型。"
-      : route === "cli"
-      ? "慢模型提供代码与命令，CLI 在任务环境执行；结果与 GUI 路线使用相同的记录和预算。"
-      : "新执行器按统一接口注册，声明工具能力与预算，向外层返回执行结果。";
     board.querySelector(".inner-loop-label").style.opacity = route === "gui" ? 1 : .3;
     drawArchitecture();
   }));
@@ -94,11 +90,6 @@
     $("placed-part").classList.toggle("visible", action > 2);
     $("saved-mark").classList.toggle("visible", action === 4 && !blocked);
     $("mini-canvas-status").textContent = action > 2 ? "框架已放入工程" : "当前工程";
-    $("loop-explanation").textContent = blocked
-      ? "找不到目标控件时，JEV 返回当前阻塞与观察。慢模型补充信息或调整子目标，而不是继续重复同一操作。"
-      : phase === "review"
-      ? "本段结束后，慢模型结合执行结果与新观察核验，再决定下一个子目标或结束任务。"
-      : "同一个子目标贯穿聚焦、输入、选择、放置与保存。JEV 每步读取新观察，不需要慢模型逐次下发点击指令。";
     $("loop-block").innerHTML = icon("refresh") + (blocked ? "返回局部执行" : "遇阻时如何返回");
     $("loop-play").innerHTML = playing ? "Ⅱ" : icon("play");
     $("loop-play").setAttribute("aria-label", playing ? "暂停执行流程" : "播放执行流程");
@@ -182,6 +173,7 @@
     document.querySelector(".assembly-poster").style.opacity = 0;
     viewer.canvas.addEventListener("pointerdown", () => { manualCamera = true; });
     introAge = reduced ? 7600 : 0;
+    readScroll();
     scheduleIntro();
     return viewer;
   }
@@ -217,14 +209,26 @@
     heroVisible = entries[0].isIntersecting;
     if (heroVisible) ready.then(() => { mountHero(); scheduleIntro(); });
     else lastIntro = 0;
-  }).observe(hero);
+  }).observe(opening);
   function readScroll() {
     document.querySelector(".header").classList.toggle("scrolled", scrollY > 30);
-    const progress = clamp(-hero.getBoundingClientRect().top/hero.offsetHeight);
-    if (!reduced) document.querySelector(".assembly-stage").style.transform = "translateY(" + (progress*70) + "px)";
+    if (reduced) return;
+    const root = opening.getBoundingClientRect(), target = slot.getBoundingClientRect();
+    const targetY = target.top-root.top+target.height/2;
+    bridgeProgress = clamp(-root.top/Math.max(1, targetY-innerHeight*.3));
+    const progress = bridgeProgress*bridgeProgress*(3-2*bridgeProgress);
+    const scale = innerWidth < 600 ? target.width/stage.offsetWidth
+      : Math.min(target.width/stage.offsetWidth, target.height/stage.offsetHeight);
+    const crop = Math.max(0, (1-target.height/(stage.offsetHeight*scale))*50);
+    const x = target.left-root.left+target.width/2-stage.offsetLeft-stage.offsetWidth/2;
+    const y = targetY-stage.offsetTop-stage.offsetHeight/2;
+    stage.style.transform = "translate(" + (x*progress) + "px," + (y*progress) + "px) scale(" + (1+(scale-1)*progress) + ")";
+    stage.style.clipPath = "inset(" + (crop*progress) + "% 0)";
+    if (bridgeProgress > introAge/7600) introAge = bridgeProgress*7600;
+    if (viewer && owner === "hero" && introFraction < 1) scheduleIntro();
   }
   addEventListener("scroll", readScroll, {passive:true});
-  addEventListener("resize", () => { if (owner === "hero") scheduleIntro(); });
+  addEventListener("resize", () => { readScroll(); if (owner === "hero") scheduleIntro(); });
   document.addEventListener("visibilitychange", () => {
     lastIntro = 0;
     if (document.hidden) { pauseLoop(); viewer?.play(false); }
@@ -235,11 +239,11 @@
     const observer = new IntersectionObserver(entries => entries.forEach(entry => {
       if (entry.isIntersecting) { entry.target.classList.add("revealed"); observer.unobserve(entry.target); }
     }), {threshold:.1});
-    document.querySelectorAll(".section-heading,.result-copy,.closing").forEach(node => {
+    document.querySelectorAll(".section-heading:not(.architecture-heading),.result-copy,.closing").forEach(node => {
       node.dataset.reveal = ""; observer.observe(node);
     });
   }
   renderLoop();
   readScroll();
-  window.JevDuoScene = {ready, mountResult, get viewer(){return viewer;}, state:() => ({route, phase, action, blocked, playing, owner, introFraction, manualCamera})};
+  window.JevDuoScene = {ready, mountResult, get viewer(){return viewer;}, state:() => ({route, phase, action, blocked, playing, owner, introFraction, manualCamera, bridgeProgress})};
 })();
