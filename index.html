@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="JevDuo: a fast–slow computer-use harness. Explore the film, four recorded workspaces and an interactive 3D assembly.">
+  <meta property="og:title" content="JevDuo — Agent Harness">
+  <meta property="og:image" content="https://xxxyxun.github.io/JevDuo/assets/film-poster.jpg">
+  <meta property="og:url" content="https://xxxyxun.github.io/JevDuo/">
+  <meta name="theme-color" content="#eceeec">
+  <title>JevDuo — Agent Harness</title>
+  <link rel="icon" href="assets/preview-atlas.png">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <a class="skip" href="#desktop">跳到并行执行记录</a>
+  <header class="site-header">
+    <a class="wordmark" href="#product" aria-label="JevDuo Agent Harness 首页"><span class="brand-mark">JevDuo</span><span>AGENT<br>HARNESS</span></a>
+    <nav aria-label="页面章节"><a href="#video">影片</a><a href="#product" data-nav="product"><i>01</i> 任务</a><a href="#desktop" data-nav="desktop"><i>02</i> 执行</a><a href="#motion" data-nav="motion"><i>03</i> 成果</a></nav>
+    <span class="header-note"><i></i> AGENT HARNESS / CASE STUDY</span>
+  </header>
+  <main>
+    <section id="product" class="product-story" aria-labelledby="product-title">
+      <div class="product-scene" id="product-scene">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="signal"></span> JEVDUO / AGENT HARNESS</p>
+          <h1 id="product-title">JevDuo</h1>
+          <p class="hero-sub">把复杂任务，推进到交付。</p>
+          <p class="hero-tech">规划 → CLI / GUI 执行 → 验证 → 恢复</p>
+          <p class="hero-description">慢模型负责规划与 CLI，JEV 选择 GUI 动作；独立验证后继续或恢复。</p><div class="hero-links"><a class="watch-film" href="#video">▶ 观看影片</a><a href="https://github.com/xxxyxun/JevDuo" target="_blank" rel="noopener">GitHub ↗</a></div>
+        </div>
+        <div class="intro-console" aria-label="首屏3D装配演绎">
+          <div class="intro-readout"><span><i class="signal"></i>3D 装配演绎</span><output id="intro-count">0 / 318</output></div>
+          <div class="intro-progress"><span id="intro-status">从第一件开始</span><input id="intro-seek" type="range" min="0" max="180" step="0.1" value="0" aria-label="首屏装配演绎进度"></div>
+          <div class="intro-actions"><button id="intro-play">暂停</button><button id="intro-replay">重播 ↺</button><button id="intro-skip">看成品 ↗</button></div>
+        </div>
+        <div class="hero-watermark" aria-hidden="true">DUO</div>
+        <div class="product-mount model-mount" id="hero-mount" aria-label="可拖动旋转的318件变速箱3D重建"></div>
+        <div class="object-tag"><span class="tiny-cross">+</span> CASE STUDY 01 / 复杂装配<br><small>NorthCUA 案例素材 · 3D 装配演绎</small></div>
+        <div class="dimension" aria-hidden="true"><span>JEVDUO / COMPLEX TASK WORKFLOWS</span><span>CASE / 01</span></div>
+        <div class="module-copy">
+          <p class="eyebrow"><span class="signal"></span> CASE STUDY 01 / TASK DECOMPOSITION</p>
+          <h2>拆开任务，<br>连接成果。</h2>
+          <p>在这个复杂装配案例中，主传动、齿轮、<br>组合机构与差速器被组织为独立模块。</p>
+          <div class="module-views" aria-label="模块观察角度"><button data-product-view="overall" aria-pressed="true">整体 <span>↗</span></button><button data-product-view="shift" aria-pressed="false">换挡机构 <span>↗</span></button><button data-product-view="output" aria-pressed="false">输出侧 <span>↗</span></button></div>
+        </div>
+        <div class="scene-bottom">
+          <div class="specification"><div><strong>318<span>PCS</span></strong><small>本案例零件数</small></div><div><strong>04<span>LANES</span></strong><small>案例执行分路</small></div><div><strong>10<span>GEARS</span></strong><small>案例前进挡位</small></div></div>
+          <div class="module-index"><span><i>A</i> 主体与主传动</span><span><i>B</i> J 齿轮机构</span><span><i>C</i> 组合机构</span><span><i>D</i> 差速器与约束</span></div>
+          <a class="scroll-cue" href="#desktop"><span>探索案例执行记录</span><b>↓</b></a>
+        </div>
+        <div class="story-progress" aria-hidden="true"><span>01</span><i><b></b></i><span>02</span></div>
+      </div>
+    </section>
+
+    <section id="video" class="film-section section-shell" aria-labelledby="film-title">
+      <div class="chapter-line"><span>JEVDUO / THE FILM</span><a href="downloads/JevDuo-v15-4K.mp4" download>下载 4K 原片 ↗</a></div>
+      <div class="section-heading"><h2 id="film-title">一个目标。<br>协同推进。</h2><div><p>规划、路由、连续执行。<br>从任务到交付，观看完整展示。</p></div></div>
+      <video id="jevduo-film" class="film-player" controls playsinline preload="none" poster="assets/film-poster.jpg" aria-label="JevDuo 架构与装配案例展示影片"><source src="assets/jevduo-film-1080p.mp4" type="video/mp4">浏览器不支持播放，请下载影片观看。</video>
+      <div class="film-links"><span>在线播放 1080p · 原片 4K</span><a href="downloads/jevduo-c-atlas-offline.zip" download>下载原始 C 版离线展示 ↗</a></div>
+      <p class="film-boundary">架构动画与历史桌面实录结合展示；JEV 决策段为机制示意，不作为本案例的实跑对照。</p>
+    </section>
+
+    <section id="desktop" class="desktop-section section-shell" aria-labelledby="desktop-title">
+      <div class="chapter-line"><span><i>02</i> EXECUTION RECORDS</span><span>NORTHCUA BACKEND / CASE MATERIAL</span></div>
+      <div class="section-heading"><h2 id="desktop-title">并行执行<br>记录。</h2><div><p>四路工作台，保留执行过程。<br>从空工程到模块合入。</p><span class="mini-note">案例素材：NorthCUA 后端装配实录</span></div></div>
+      <div class="desktop-frame" id="desktop-frame">
+        <div class="desktop-toolbar"><span id="desktop-stage-label"><i class="signal"></i> CASE RECORDS / 04 WORKSPACES</span><div><button id="master-play" hidden>▶ 总装回放</button><button id="grid-button">四屏总览</button><button id="desktop-fullscreen" aria-label="全屏查看装配录像">全屏 <span>↗</span></button></div></div>
+        <div id="desktop-grid" class="desktop-grid"></div>
+        <div id="master-stage" class="master-stage" hidden><video id="desktop-master" playsinline muted preload="metadata" aria-label="真实桌面主工程总装录像"></video><div class="master-label"><span>FINAL INTEGRATION</span><h3>合入同一个工程。</h3><p>模块导入、对齐、318 件保存与重开</p></div></div>
+        <div class="desktop-transport">
+          <button id="desktop-play" class="play-button" aria-label="播放桌面录像"><span>▶</span><b>播放实录</b></button>
+          <div class="scrub"><div><span id="desktop-now">从空工作台开始</span><output id="desktop-clock">00:00 / 03:23</output></div><input id="desktop-seek" type="range" min="0" max="203" step="0.05" value="0" aria-label="桌面装配时间轴"></div>
+          <select id="desktop-speed" aria-label="桌面播放倍速"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>
+        </div>
+      </div>
+      <div class="chapter-jumps" aria-label="装配阶段"><button data-desktop-time="0"><span>00:00</span> 从零开始</button><button data-desktop-time="24"><span>00:24</span> 早期装配</button><button data-desktop-time="85"><span>01:25</span> 逐件推进</button><button data-desktop-time="158"><span>02:38</span> 模块成形</button><button data-desktop-time="180"><span>03:00</span> 主工程总装 <i>↗</i></button></div>
+      <p class="desktop-note">本区为 NorthCUA 后端 / BrickLink Studio 案例实录，按各路装配进度对齐。点按各屏 ↗ 放大；子模型切换与自建模块导入均保留标注。</p>
+      <p class="media-error" id="media-error" role="status" hidden></p>
+    </section>
+
+    <section id="motion" class="motion-section section-shell" aria-labelledby="motion-title">
+      <div class="chapter-line"><span><i>03</i> RESULT EXPLORER</span><span>CASE STUDY 01 / 318 PIECES</span></div>
+      <div class="motion-heading"><div><p class="eyebrow"><span class="signal"></span> EXPLORE THE CASE RESULT</p><h2 id="motion-title">成果交互。</h2></div><p>旋转、换挡，检查案例成果。<br><span>既有 MuJoCo 理想约束记录回放</span></p></div>
+      <div class="motion-stage" id="motion-stage">
+        <div class="model-mount" id="motion-mount" aria-label="可旋转缩放的变速箱运动记录"></div>
+        <div class="motion-view-tools"><div><button data-motion-view="overall" aria-pressed="true">整体</button><button data-motion-view="shift" aria-pressed="false">换挡机构</button><button data-motion-view="output" aria-pressed="false">输出侧</button></div><div><button id="motion-zoom-out" aria-label="缩小模型">−</button><button id="motion-zoom-in" aria-label="放大模型">＋</button><button id="motion-xray" aria-pressed="false">透视框架</button><button id="motion-reset">复位 ↺</button></div></div>
+        <div class="current-gear"><span>SELECTED GEAR</span><output id="current-gear">R</output></div>
+        <div class="motion-readout"><div><span>输出 / 输入</span><output id="ratio">—</output></div><div><span>输入轴 <small>rad/s</small></span><output id="input-speed">—</output></div><div><span>输出轴 <small>rad/s</small></span><output id="output-speed">—</output></div></div>
+        <div class="motion-hint">拖动旋转 · ＋ / − 缩放</div>
+      </div>
+      <div class="motion-console">
+        <div class="gear-row"><span>SELECT<br><small>选择挡位</small></span><nav id="gear-buttons" aria-label="选择挡位"></nav></div>
+        <div class="motion-transport"><button id="motion-play" class="play-button"><span>▶</span><b>运行回放</b></button><input id="motion-seek" type="range" min="0" max="59.2" step="0.01" value="0" aria-label="运动记录时间轴"><output id="motion-clock">00:00 / 00:59</output></div>
+      </div>
+      <div class="motion-caption"><span><i style="--c:#2584c9"></i> 输入轴 <i style="--c:#3b996a"></i> 输出轴 <i style="--c:#d99430"></i> 选挡轴 <i style="--c:#d53f3f"></i> 滑环</span><p>网页回放已有记录；并非实时求解或实物验证。</p></div>
+    </section>
+  </main>
+  <footer class="site-footer section-shell"><div class="footer-top"><a class="footer-brand" href="#product">JevDuo<span>AGENT HARNESS / 把复杂任务，推进到交付。</span></a><a href="#product" class="back-top">回到起点 ↑</a></div><details id="sources"><summary>案例素材、重建与记录说明 <span>＋</span></summary><div class="source-copy"><p>JevDuo 是本页展示的 agent harness；复杂装配为交互案例，素材来自既有 NorthCUA 后端运行。本页不宣称 JevDuo 已执行这份轨迹。规划、CLI / GUI 执行、验证与恢复是能力说明，首屏装配演绎进度不作为实时代理日志。</p><p>桌面区使用原始 NorthCUA / BrickLink Studio 录像，精选搜索、放置、定姿与保存过程，并压缩推理等待。四路按装配进度对齐，不代表同一真实时刻；保存点来自原始工程记录。子模型切换及自建模块导入已标注，不生成虚假的 GUI 放置帧。CLI 辅助的约束模块不冒充逐件 GUI 装配。</p><p>3D 为 318 件彩色装配重建；运行展示使用已有 MuJoCo 求解记录，包含理想齿轮及离合器约束。网页不实时求解，不代表全零件接触、干涉或实物强度认证。本页仅整理展示，未新增模型调用、重新装配或修改原始轨迹和工程。Three.js 使用 MIT 许可证。</p><p>视觉研究参考 Atlas Motion 的工业产品节奏与 Igloo Inc 的连续场景衔接；页面、排版及展示对象独立制作，不复用其品牌或模型资产。</p></div></details><div class="footer-bottom"><span>JEVDUO / AGENT HARNESS</span><span><a href="https://github.com/xxxyxun/JevDuo" target="_blank" rel="noopener">GitHub ↗</a> · <a href="THREE-LICENSE.txt">Three.js license</a></span></div></footer>
+  <script defer src="assets/three.js"></script>
+  <script defer src="assets/viewer.js"></script>
+  <script defer src="assets/intro.js"></script>
+  <script defer src="assets/boot.js"></script>
+</body>
+</html>
