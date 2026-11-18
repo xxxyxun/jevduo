@@ -7,15 +7,15 @@
   const clamp = value => Math.max(0, Math.min(1, value));
   const hero = $("story"), board = $("architecture-board"), theater = $("execution-theater");
   const actions = [
-    {label:"聚焦", observation:"零件库已打开，搜索框可用", choices:["聚焦零件搜索框","展开其他分类","返回外层规划"], receipt:"焦点读回：零件搜索框已激活", generated:"根据当前截图，先定位零件库上方的搜索框，再点击该框以建立输入焦点。确认焦点后，下一步才能写入已提供的零件编号。"},
-    {label:"输入", observation:"搜索框已获得焦点，输入值由 Planner 提供", choices:["输入零件编号 64179","修改模型名称","重新打开零件库"], receipt:"字段读回：64179，与给定编号一致", generated:"当前焦点已在零件搜索框。读取子目标提供的准确编号 64179，将该编号写入当前字段，再检查字段值和对应搜索结果。"},
-    {label:"选择", observation:"匹配搜索条件的零件已出现", choices:["选择编号匹配的框架","选择旁边的普通砖块","重复输入相同编号"], receipt:"选中状态读回：目标框架已选中", generated:"查看更新后的搜索结果，辨认与编号匹配的框架，点击选中该零件。不要选择旁边的普通砖块，也不需要再次输入相同编号。"},
-    {label:"放置", observation:"目标框架已选中，装配区可操作", choices:["在指定装配位置放置","切回搜索框","再次选择相同零件"], receipt:"执行回执返回：零件已放入装配区", generated:"根据子目标提供的位置与当前装配区，放置已经选中的框架。执行后检查新观察，确认零件出现，再进入本段的保存操作。"},
-    {label:"保存", observation:"本段放置完成，当前工程需要保存", choices:["保存当前模块","关闭未保存的工程","再次放置同一零件"], receipt:"保存证据返回：交由外层核验本段结果", generated:"当前放置操作已结束。执行工程保存，并将保存后的观察与回执交回外层，核验是否满足本段目标；不要仅凭已点击保存就宣布整题完成。"},
+    {label:"聚焦", observation:"搜索框已出现在当前观察中", choices:["点击零件搜索框","展开其他分类","返回慢模型"], receipt:"读回焦点：搜索框已激活"},
+    {label:"输入", observation:"搜索框已激活，零件编号已由慢模型提供", choices:["输入 64179","修改工程名称","重新打开零件库"], receipt:"读回字段：输入值为 64179"},
+    {label:"选择", observation:"搜索结果已更新，目标框架可见", choices:["选中目标框架","选择普通砖块","再次输入编号"], receipt:"读回选中状态：目标框架已选中"},
+    {label:"放置", observation:"目标框架已选中，可以放入当前工程", choices:["放到指定装配位置","切回搜索框","重复选中框架"], receipt:"动作回执：框架已放入装配区"},
+    {label:"保存", observation:"本段装配已完成，等待保存", choices:["保存当前工程","关闭未保存工程","重复放置框架"], receipt:"保存回执与最新观察已返回"},
   ];
   let viewer = null, owner = "hero", heroVisible = true, introAge = 0, introFraction = reduced ? 1 : 0;
   let manualCamera = false, introFrame = 0, lastIntro = 0, route = "gui";
-  let mode = "jev", action = 0, blocked = false, playing = false, loopTimer = null, loopStarted = false;
+  let phase = "execution", action = 0, blocked = false, playing = false, loopTimer = null, loopStarted = false;
 
   function line(path, type = "") {
     return '<path class="arch-wire ' + type + '" d="' + path + '"/>';
@@ -59,47 +59,49 @@
     board.dataset.route = route;
     board.querySelectorAll("[data-route]").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
     $("route-explanation").textContent = route === "gui"
-      ? "JEV 在同一子目标内接收新观察、连续选择动作；局部动作不逐次触发外层规划。"
+      ? "同一子目标内，JEV 根据新截图与可用动作选择下一步。完成或遇阻后，再返回慢模型。"
       : route === "cli"
-      ? "CLI 路径由慢模型提供代码与命令，同样经过共享执行器、预算与真实回执，不绕过外层核验。"
-      : "注册组件时声明能力、工具权限与预算。这里展示扩展接口，不代表已经接入额外生产执行器。";
+      ? "慢模型提供代码与命令，CLI 在任务环境执行；结果与 GUI 路线使用相同的记录和预算。"
+      : "新执行器按统一接口注册，声明工具能力与预算，向外层返回执行结果。";
     board.querySelector(".inner-loop-label").style.opacity = route === "gui" ? 1 : .3;
     drawArchitecture();
   }));
   new ResizeObserver(drawArchitecture).observe(board);
 
   function renderLoop() {
-    const item = actions[action], generated = mode === "generated";
-    theater.dataset.mode = mode;
+    const item = actions[action];
+    theater.dataset.phase = phase;
     theater.dataset.blocked = String(blocked);
-    $("slow-status").textContent = blocked ? "收到阻塞证据" : generated ? "生成第 " + (action+1) + " 个动作" : action === 4 ? "等待本段核验" : "子目标保持不变";
-    $("plan-state").textContent = blocked ? "补充观察后再决定" : generated ? "逐步请求动作生成" : "不逐动作重新规划";
-    $("work-title").textContent = blocked ? "停止局部执行，带证据返回" : generated ? "慢模型生成下一动作" : "JEV 选择下一动作";
-    $("work-icon").innerHTML = icon(generated ? "brain" : "bolt");
-    $("observation-text").textContent = blocked ? "当前候选里缺少目标控件" : item.observation;
-    $("decision-title").textContent = blocked ? "本次返回条件已触发" : generated ? "为当前一步生成操作说明" : "从当前候选中选择";
-    $("receipt-text").textContent = blocked ? "停止重复点击；将缺失控件与最后观察返回外层" : item.receipt;
-    $("local-choice").hidden = generated && !blocked;
-    $("generation-copy").hidden = !generated || blocked;
-    $("generation-copy").textContent = item.generated;
-    const choices = blocked ? ["返回外层补充观察","重复点击上次位置","未确认就重放动作"] : item.choices;
+    document.querySelectorAll(".execution-flow [data-phase]").forEach(node => {
+      node.classList.toggle("active", node.dataset.phase === phase);
+    });
+    $("slow-status").textContent = blocked ? "接收阻塞，调整子目标" : phase === "goal" ? "下发一个子目标" : phase === "review" ? "核验本段结果" : "子目标已下发";
+    $("plan-state").textContent = blocked ? "处理当前缺失的信息" : phase === "review" ? "核验后决定下一步" : "等待本段执行结果";
+    $("work-title").textContent = blocked ? "停止局部循环" : phase === "goal" ? "接收子目标与输入" : phase === "review" ? "本段执行已结束" : "JEV 选择下一动作";
+    $("observation-text").textContent = blocked ? "目标控件未出现在当前候选中" : phase === "goal" ? "目标、输入与返回条件已明确" : phase === "review" ? "将执行结果与最新观察交给慢模型" : item.observation;
+    $("decision-title").textContent = blocked ? "返回慢模型处理阻塞" : "当前观察下的动作候选";
+    $("receipt-text").textContent = blocked ? "保留当前状态，返回缺失控件与最后观察" : phase === "goal" ? "收到子目标后，开始本段 GUI 操作" : item.receipt;
+    const choices = blocked ? ["返回慢模型补充观察","重复点击上次位置","未确认就重放动作"] : item.choices;
     $("local-choice").innerHTML = choices.map((text, i) => '<div class="choice-row ' + (i === 0 ? "selected" : "") + '"><span>0' + (i+1) + '</span>' + text + (i === 0 ? icon("check") : "") + '</div>').join("");
-    $("action-beads").innerHTML = actions.map((entry, i) => '<button class="action-bead ' + (i < action ? "done" : i === action ? "active" : "") + '" data-action="' + i + '" aria-pressed="' + (i === action) + '">' + entry.label + '</button>').join("");
-    $("mini-search").classList.toggle("focused", action < 2);
-    $("mini-search-value").textContent = action > 0 ? "64179" : "搜索零件";
+    $("action-beads").innerHTML = actions.map((entry, i) => {
+      const state = phase === "review" && !blocked || i < action ? "done" : i === action && phase === "execution" ? "active" : "";
+      return '<button class="action-bead ' + state + '" data-action="' + i + '" aria-pressed="' + (i === action) + '">' + entry.label + '</button>';
+    }).join("");
+    $("mini-search").classList.toggle("focused", phase === "execution" && action < 2);
+    $("mini-search-value").textContent = action > 0 ? "64179" : "零件编号";
     $("mini-parts").classList.toggle("visible", action > 0);
     $("mini-parts").classList.toggle("chosen", action > 1);
     $("placed-part").classList.toggle("visible", action > 2);
     $("saved-mark").classList.toggle("visible", action === 4 && !blocked);
-    $("mini-canvas-status").textContent = action > 2 ? "目标框架已放置" : "装配区";
-    $("mode-explanation").textContent = blocked
-      ? "目标缺失时停止局部循环。把阻塞与新观察交回外层，补充信息或调整路径；不靠重复点击继续。"
-      : generated
-      ? "对照示意：每一步请求慢模型生成操作说明。这里比较调用结构，不比较真实秒数或 token 数量。"
-      : "子目标与输入保持不变。JEV 连续选择具体动作，减少逐动作慢模型往返与动作长文本生成；阶段返回后再由外层核验。";
-    $("loop-block").innerHTML = icon("refresh") + (blocked ? "恢复演示" : "模拟遇阻");
+    $("mini-canvas-status").textContent = action > 2 ? "框架已放入工程" : "当前工程";
+    $("loop-explanation").textContent = blocked
+      ? "找不到目标控件时，JEV 返回当前阻塞与观察。慢模型补充信息或调整子目标，而不是继续重复同一操作。"
+      : phase === "review"
+      ? "本段结束后，慢模型结合执行结果与新观察核验，再决定下一个子目标或结束任务。"
+      : "同一个子目标贯穿聚焦、输入、选择、放置与保存。JEV 每步读取新观察，不需要慢模型逐次下发点击指令。";
+    $("loop-block").innerHTML = icon("refresh") + (blocked ? "返回局部执行" : "遇阻时如何返回");
     $("loop-play").innerHTML = playing ? "Ⅱ" : icon("play");
-    $("loop-play").setAttribute("aria-label", playing ? "暂停连续执行示意" : "播放连续执行示意");
+    $("loop-play").setAttribute("aria-label", playing ? "暂停执行流程" : "播放执行流程");
   }
 
   function pauseLoop() {
@@ -110,41 +112,35 @@
 
   function advanceLoop() {
     if (!playing || blocked || document.hidden) return;
-    if (action === actions.length-1) { pauseLoop(); return; }
-    action++;
+    if (phase === "goal") phase = "execution";
+    else if (action === actions.length-1) { phase = "review"; pauseLoop(); return; }
+    else action++;
     renderLoop();
-    loopTimer = setTimeout(advanceLoop, 1550);
+    loopTimer = setTimeout(advanceLoop, 1350);
   }
 
   function playLoop() {
     clearTimeout(loopTimer);
-    if (blocked) blocked = false;
-    if (action === actions.length-1) action = 0;
+    if (blocked || phase === "review") { blocked = false; action = 0; phase = "goal"; }
     playing = true;
     renderLoop();
-    loopTimer = setTimeout(advanceLoop, 1550);
+    loopTimer = setTimeout(advanceLoop, phase === "goal" ? 900 : 1350);
   }
 
-  document.querySelectorAll(".mode-switch [data-mode]").forEach(button => button.addEventListener("click", () => {
-    mode = button.dataset.mode;
-    document.querySelectorAll(".mode-switch [data-mode]").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
-    blocked = false;
-    action = 0;
-    pauseLoop();
-  }));
   $("action-beads").addEventListener("click", event => {
     const button = event.target.closest("[data-action]");
     if (!button) return;
     action = +button.dataset.action;
+    phase = "execution";
     blocked = false;
     pauseLoop();
   });
   $("loop-play").onclick = () => playing ? pauseLoop() : playLoop();
-  $("loop-replay").onclick = () => { action = 0; blocked = false; reduced ? pauseLoop() : playLoop(); };
-  $("loop-block").onclick = () => { blocked = !blocked; pauseLoop(); };
+  $("loop-replay").onclick = () => { action = 0; blocked = false; phase = "goal"; reduced ? pauseLoop() : playLoop(); };
+  $("loop-block").onclick = () => { blocked = !blocked; phase = blocked ? "review" : "execution"; pauseLoop(); };
   new IntersectionObserver(entries => {
     if (!entries[0].isIntersecting) { if (playing) pauseLoop(); return; }
-    if (!loopStarted && !reduced) { loopStarted = true; playLoop(); }
+    if (!loopStarted && !reduced) { loopStarted = true; phase = "goal"; playLoop(); }
   }, {threshold:.35}).observe(theater);
 
   function paintIntro(now) {
@@ -169,10 +165,10 @@
   async function initScene() {
     window.gearboxData ||= await fetch(document.documentElement.dataset.assets + "model.json").then(response => response.json());
     viewer = window.GearboxViewer.create($("hero-model-mount"), {theme:"atlas", onUpdate:state => {
-      $("assembly-count").textContent = state.placed + " / " + state.pieces + " 件";
       window.dispatchEvent(new CustomEvent("gearbox-update", {detail:state}));
     }});
     viewer.renderer.toneMappingExposure = 1.02;
+    viewer.canvas.setAttribute("aria-label", "拖动旋转装配模型");
     viewer.scene.children.filter(node => node.isLight).forEach(light => {
       if (light.isHemisphereLight) light.intensity = 1.6;
       else if (light.castShadow) { light.intensity = 3.6; light.shadow.mapSize.set(2048,2048); }
@@ -214,7 +210,7 @@
   }
 
   const ready = initScene().catch(() => {
-    $("hero-model-loading").textContent = "交互场景暂未载入，可继续观看影片。";
+    $("hero-model-loading").textContent = "场景暂未加载。";
     return null;
   });
   new IntersectionObserver(entries => {
@@ -222,10 +218,6 @@
     if (heroVisible) ready.then(() => { mountHero(); scheduleIntro(); });
     else lastIntro = 0;
   }).observe(hero);
-  $("intro-replay").onclick = () => {
-    introAge = 0; introFraction = reduced ? 1 : 0; manualCamera = false; lastIntro = 0;
-    scheduleIntro();
-  };
   function readScroll() {
     document.querySelector(".header").classList.toggle("scrolled", scrollY > 30);
     const progress = clamp(-hero.getBoundingClientRect().top/hero.offsetHeight);
@@ -243,11 +235,11 @@
     const observer = new IntersectionObserver(entries => entries.forEach(entry => {
       if (entry.isIntersecting) { entry.target.classList.add("revealed"); observer.unobserve(entry.target); }
     }), {threshold:.1});
-    document.querySelectorAll(".overview-heading,.overview-copy,.section-heading,.result-copy,.closing").forEach(node => {
+    document.querySelectorAll(".section-heading,.result-copy,.closing").forEach(node => {
       node.dataset.reveal = ""; observer.observe(node);
     });
   }
   renderLoop();
   readScroll();
-  window.JevDuoScene = {ready, mountResult, get viewer(){return viewer;}, state:() => ({route, mode, action, blocked, playing, owner, introFraction, manualCamera})};
+  window.JevDuoScene = {ready, mountResult, get viewer(){return viewer;}, state:() => ({route, phase, action, blocked, playing, owner, introFraction, manualCamera})};
 })();

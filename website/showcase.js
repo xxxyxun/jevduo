@@ -12,25 +12,25 @@
     casePlaying = Boolean(playing);
     Object.values(videos).forEach(video=>video.pause());
     $("case-play").innerHTML = casePlaying ? "Ⅱ" : icon("play");
-    $("case-play").setAttribute("aria-label",casePlaying ? "暂停案例录像" : "播放案例录像");
+    $("case-play").setAttribute("aria-label",casePlaying ? "暂停桌面回放" : "播放桌面回放");
     if (!casePlaying || !presentation) return;
     const selected = grid && activeLane!=="master" ? presentation.lanes.map(lane=>videos[lane.id]) : [videos[activeLane]];
     try { await Promise.all(selected.map(video=>video.play())); }
-    catch { casePlaying=false;$("workspace-phase").textContent="未能播放，请点击重试或观看上方影片。";$("case-play").innerHTML=icon("play"); }
+    catch { casePlaying=false;$("workspace-phase").textContent="回放未能启动，请重试。";$("case-play").innerHTML=icon("play"); }
   }
   function renderCase() {
     if (!presentation) return;
     const master = activeLane==="master";
     $("workspace-display").classList.toggle("grid",grid&&!master);
     $("grid-toggle").setAttribute("aria-pressed",String(grid&&!master));
-    $("grid-toggle").innerHTML=`${icon("grid")} ${grid&&!master ? "聚焦当前桌面" : "四屏总览"}`;
+    $("grid-toggle").innerHTML=`${icon("grid")} ${grid&&!master ? "单路查看" : "并排查看"}`;
     Object.entries(videos).forEach(([id,video])=>video.classList.toggle("active",id===activeLane));
     document.querySelectorAll("[data-workspace]").forEach(button=>{
       const selected=button.dataset.workspace===activeLane;
       button.setAttribute("aria-selected",String(selected));button.tabIndex=selected?0:-1;
     });
-    $("workspace-title").textContent=master ? "主工程总装" : presentation.lanes.find(lane=>lane.id===activeLane).label;
-    $("workspace-phase").textContent=master ? "自建模块合入、对齐与保存" : caseTime<3 ? "从空工程开始" : "搜索、放置与保存";
+    $("workspace-title").textContent=master ? "总装工程" : presentation.lanes.find(lane=>lane.id===activeLane).label;
+    $("workspace-phase").textContent=master ? "合入模块、对齐并保存" : caseTime<3 ? "开始装配" : "模块装配";
     $("case-seek").value=caseTime;
     $("case-clock").textContent=`${clock(caseTime)} / ${clock(presentation.parallel_seconds+presentation.master_seconds)}`;
   }
@@ -50,18 +50,18 @@
   }
   async function initCase() {
     presentation=window.showcasePresentation||await fetch(`${assets}presentation.json`).then(response=>response.json());
-    const lanes=[...presentation.lanes,{id:"master",label:"主工程总装"}];
+    const lanes=[...presentation.lanes,{id:"master",label:"总装工程"}];
     for(const lane of lanes){
       const video=document.createElement("video");
       video.dataset.lane=lane.id;video.playsInline=true;video.muted=true;video.preload="metadata";
       video.playbackRate=+$("case-speed").value;video.src=`${assets}desktop-${lane.id}.mp4`;
       if(lane.id!=="master")video.poster=`${assets}desktop-${lane.id}.jpg`;
-      video.setAttribute("aria-label",`${lane.label}历史桌面录像`);
+      video.setAttribute("aria-label",`${lane.label}桌面操作回放`);
       $("workspace-display").append(video);videos[lane.id]=video;
       const button=document.createElement("button");
       button.className="workspace-tab";button.dataset.workspace=lane.id;
       button.setAttribute("role","tab");button.setAttribute("aria-controls","workspace-display");
-      button.innerHTML=`${lane.id==="master"?"":`<img src="${assets}desktop-${lane.id}.jpg" alt="" loading="lazy">`}<span><b>${lane.id==="master"?"ASSEMBLY":`WORKSPACE ${lane.id.toUpperCase()}`}</b>${lane.label}</span>`;
+      button.innerHTML=`${lane.id==="master"?"":`<img src="${assets}desktop-${lane.id}.jpg" alt="" loading="lazy">`}<span>${lane.label}</span>`;
       button.onclick=()=>selectLane(lane.id);$("workspace-tabs").append(button);
       video.ontimeupdate=()=>{
         if(lane.id!==(grid&&activeLane!=="master"?"a":activeLane))return;
@@ -90,7 +90,7 @@
   let casePromise=null;
   $("execution-records").ontoggle=()=>{
     if(!$("execution-records").open){playCase(false);return;}
-    if(!casePromise)casePromise=initCase().catch(()=>{$("workspace-phase").textContent="案例素材暂未加载，请检查网络连接。";});
+    if(!casePromise)casePromise=initCase().catch(()=>{$("workspace-phase").textContent="回放素材未能加载。";});
   };
 
   function updateModel(state) {
@@ -98,8 +98,8 @@
     $("model-gear").textContent=state.label;
     $("model-ratio").textContent=Math.abs(state.input)>.01?state.ratio.toFixed(2):"—";
     $("model-seek").max=state.duration;$("model-seek").value=state.time;$("model-clock").textContent=clock(state.time);
-    $("model-play").innerHTML=`${state.playing?"Ⅱ":icon("play")} ${state.playing?"暂停回放":"运动回放"}`;
-    $("model-play").setAttribute("aria-label",state.playing?"暂停运动记录":"播放运动记录");
+    $("model-play").innerHTML=`${state.playing?"Ⅱ":icon("play")} ${state.playing?"暂停运动":"播放运动"}`;
+    $("model-play").setAttribute("aria-label",state.playing?"暂停运动回放":"播放运动回放");
     document.querySelectorAll("[data-gear]").forEach(button=>button.setAttribute("aria-pressed",String(+button.dataset.gear===state.gear)));
   }
   window.addEventListener("gearbox-update",event=>updateModel(event.detail));
