@@ -1,0 +1,350 @@
+@media(min-width:1600px){
+.hero{gap:55px}
+.hero h1{font-size:66px}
+.system-scene{height:575px}
+.workers{top:357px}
+.runtime-node{bottom:48px}
+}
+@media(max-width:1100px){
+.shell{width:calc(100% - 64px)}
+.hero{gap:25px;padding-top:60px}
+.hero h1{font-size:46px}
+.hero-lead{font-size:23px}
+.hero-description{font-size:14px}
+.hero-actions{gap:8px}
+.hero-actions .button{font-size:12px;padding:12px 13px}
+.system-scene{height:530px}
+.planner-node{padding:12px;gap:9px}
+.planner-node strong{font-size:12px}
+.planner-node>div>span{font-size:10px}
+.planner-node .model-icon{width:34px;height:34px}
+.goal-node{padding:12px}
+.goal-node strong{font-size:10px}
+.goal-node .goal-input{font-size:9px}
+.workers{gap:9px;top:332px}
+.router-node{top:275px}
+.runtime-node{gap:7px;left:5%;right:5%;font-size:10px}
+.runtime-return{padding-left:7px;margin-left:1px;font-size:9px}
+.scene-bottom{font-size:9px}
+.loop-panel{grid-template-columns:185px 1fr}
+.loop-rail{padding:25px 18px}
+.loop-main{padding:25px 23px 0}
+.decision-stage{gap:12px;grid-template-columns:1fr 20px 1.08fr}
+.decision-arrow svg{width:20px}
+.choice-option{font-size:10px;padding:9px 8px}
+.goal-bar strong{font-size:12px}
+.state-pill{font-size:10px}
+.action-step{padding:8px 5px}
+.action-step>strong{font-size:10px}
+.workspace-tab img{width:30px}
+.workspace-tab{padding:13px 10px;gap:7px}
+.workspace-tab>span{font-size:10px}
+.case-badge{font-size:10px}
+.result-section{gap:30px;grid-template-columns:.7fr 1.3fr}
+.result-copy h3{font-size:29px}
+.result-specs{gap:23px}
+.model-mount{height:300px}
+.result-toolbar{padding:15px}
+.result-toolbar>div{gap:12px}
+.result-toolbar button{font-size:10px}
+}
+@media(max-width:820px){
+.shell{width:calc(100% - 44px)}
+.header{height:86px}
+.header nav{gap:18px;font-size:12px}
+.github-link{font-size:12px}
+.github-link>span{display:none}
+.brand{font-size:25px}
+.brand-icon{width:26px;height:30px}
+.hero{grid-template-columns:1fr;gap:35px;padding-top:47px}
+.hero-copy{text-align:center;padding:0}
+.hero-copy .eyebrow{justify-content:center}
+.hero h1{font-size:clamp(42px,7.2vw,60px);margin-top:20px}
+.hero-lead{font-size:23px;margin-top:22px}
+.hero-lead br{display:none}
+.hero-description{margin:15px auto 0;max-width:490px}
+.hero-actions{justify-content:center;margin-top:24px}
+.hero-actions .button{font-size:13px;padding:13px 18px}
+.hero-caption{justify-content:center;margin-top:18px}
+.system-scene{width:min(580px,100%);margin:auto;height:545px}
+.planner-node strong{font-size:15px}
+.planner-node>div>span{font-size:11px}
+.planner-node{padding:15px;gap:12px}
+.planner-node .model-icon{width:42px;height:42px}
+.goal-node strong{font-size:12px}
+.goal-node .goal-input{font-size:10px}
+.workers{top:342px}
+.runtime-node{font-size:11px;gap:10px}
+.runtime-return{font-size:10px}
+.scene-bottom{font-size:10px}
+.benefit-strip{margin-top:0;gap:18px;padding-top:25px;padding-bottom:26px}
+.benefit-strip>div{gap:9px}
+.benefit-strip strong{font-size:13px}
+.benefit-strip span>span{font-size:10px}
+.benefit-strip>div>svg{width:20px;height:20px}
+.section-pad{padding-block:75px}
+.section-heading{gap:30px}
+.section-heading h2{font-size:38px}
+.section-intro{font-size:12px;max-width:300px}
+.loop-panel{grid-template-columns:1fr}
+.loop-rail{border-right:0;border-bottom:1px solid #e1e8d9;flex-direction:row;align-items:center;justify-content:space-around;padding:12px 10px;gap:7px}
+.rail-heading,.rail-loop{display:none}
+.rail-connector{width:18px;height:1px;margin:0}
+.rail-item{padding:8px;gap:7px}
+.rail-item>div>span{display:none}
+.rail-icon{width:28px;height:28px}
+.rail-icon svg{width:18px;height:18px}
+.rail-item strong{font-size:12px}
+.rail-pulse{display:none}
+.loop-main{padding:24px 27px 0}
+.decision-stage{grid-template-columns:1fr 25px 1fr;gap:18px}
+.choice-option{font-size:12px}
+.action-step>strong{font-size:11px}
+.goal-bar strong{font-size:13px}
+.workspace-toolbar>div>span:last-child{display:none}
+.workspace-tab{justify-content:center;gap:6px;padding:14px 8px}
+.workspace-tab img{display:none}
+.workspace-tab>span{font-size:11px}
+.workspace-tabs{gap:0}
+.case-task{padding:17px}
+.case-task strong{font-size:12px}
+.case-badge{display:none}
+.result-section{grid-template-columns:1fr;margin-top:65px;gap:25px}
+.result-copy{display:grid;grid-template-columns:1fr 1fr;column-gap:35px}
+.result-copy .eyebrow{grid-column:1/-1}
+.result-copy h3{margin-top:15px;font-size:31px}
+.result-copy>p:not(.eyebrow){align-self:center;margin-top:10px}
+.result-specs{margin:15px 0 0}
+.result-boundary{align-self:center;margin-top:15px}
+.model-mount{height:340px}
+.result-toolbar button{font-size:12px}
+.gear-controls button{font-size:12px;min-height:38px}
+.model-transport{font-size:12px}
+.model-transport button{font-size:12px}
+.model-readout{font-size:11px}
+.closing h2{font-size:34px}
+.footer-top>span{font-size:10px}
+}
+@media(max-width:520px){
+.shell{width:calc(100% - 36px)}
+.header{height:77px;gap:12px}
+.header nav{gap:15px;font-size:11px}
+.header nav>a:last-child{display:none}
+.brand{font-size:23px;gap:7px}
+.brand-icon{width:25px;height:28px;border-radius:8px}
+.brand-icon svg{width:20px;height:20px}
+.github-link{gap:5px;font-size:11px}
+.github-link svg{width:17px;height:17px}
+.hero{padding-top:38px;gap:26px}
+.hero-copy .eyebrow{font-size:9px;letter-spacing:.06em;gap:8px}
+.hero h1{font-size:clamp(33px,8.85vw,45px);line-height:1.15;margin-top:21px}
+.hero-lead{font-size:19px;margin-top:18px}
+.hero-description{font-size:12px;line-height:1.9;max-width:320px;margin-top:14px}
+.hero-actions{margin-top:22px;gap:9px}
+.hero-actions .button{font-size:12px;padding:11px 14px;min-height:46px;border-radius:9px}
+.hero-caption{font-size:10px;margin-top:18px;gap:8px}
+.system-scene{height:469px;border-radius:21px}
+.scene-top{left:19px;right:19px;top:17px;font-size:8px}
+.scene-label{font-size:9px;padding:3px 8px}
+.task-capsule{top:65px;padding:12px;gap:9px;border-radius:11px}
+.task-capsule>svg{width:22px;height:22px}
+.task-capsule strong{font-size:11px}
+.task-capsule div>span{font-size:8px}
+.task-spark{font-size:20px}
+.planner-node{top:143px;padding:10px;width:40%;height:80px;gap:7px;border-radius:13px}
+.planner-node .model-icon{width:31px;height:33px;border-radius:10px}
+.planner-node .model-icon svg{width:23px;height:23px}
+.planner-node strong{font-size:11px}
+.planner-node>div>span{font-size:9px}
+.goal-node{top:148px;width:45%;padding:11px 10px;border-radius:13px;min-height:70px}
+.goal-node>span{font-size:9px}
+.goal-node strong{font-size:10px;line-height:1.5;margin-top:2px}
+.goal-node .goal-input{font-size:8px;margin-top:5px}
+.router-node{top:242px;width:82px;left:calc(50% - 41px);font-size:10px;padding:4px;gap:4px}
+.router-node svg{width:15px;height:15px}
+.workers{top:294px;gap:9px}
+.worker{min-height:95px;border-radius:14px}
+.worker strong{font-size:12px}
+.worker>span:not(.model-icon){font-size:9px}
+.worker>.model-icon{width:29px;height:29px;border-radius:9px}
+.worker .model-icon svg{width:19px;height:19px}
+.worker.jev{min-height:111px}
+.worker.jev>.model-icon{width:34px;height:34px;border-radius:10px}
+.worker.jev strong{font-size:17px}
+.worker.jev .model-icon svg{width:24px;height:24px}
+.activity{gap:3px;right:8px;top:9px}
+.activity b{width:2px;height:7px}
+.runtime-node{bottom:41px;min-height:32px;padding:7px 8px;gap:8px;font-size:9px}
+.runtime-node>svg{width:12px;height:12px}
+.runtime-return{font-size:8px;padding-left:7px;gap:3px}
+.runtime-return svg{width:12px;height:12px}
+.scene-bottom{bottom:15px;font-size:8px;gap:6px}
+.benefit-strip{gap:18px;padding-block:23px;grid-template-columns:1fr}
+.benefit-strip>div{gap:13px;align-items:center}
+.benefit-strip>div>svg{width:22px;height:22px;margin:0}
+.benefit-strip strong{font-size:13px}
+.benefit-strip span>span{font-size:11px;margin-top:2px}
+.section-pad{padding-block:59px}
+.section-heading{flex-direction:column;align-items:flex-start;gap:18px;margin-bottom:28px}
+.section-heading h2{font-size:34px}
+.section-heading .eyebrow{font-size:10px;margin-bottom:12px}
+.section-intro{font-size:12px;line-height:1.9}
+.scenario-tabs{gap:4px;margin-bottom:14px;justify-content:space-between}
+.scenario-tabs button{font-size:10px;padding:10px 8px;gap:5px;border-radius:8px}
+.scenario-tabs button svg{width:14px;height:14px}
+.loop-panel{border-radius:15px}
+.loop-rail{padding:10px 7px;gap:2px}
+.rail-item{padding:7px 5px;gap:5px}
+.rail-item strong{font-size:10px}
+.rail-icon{width:24px;height:25px;border-radius:7px}
+.rail-icon svg{width:16px;height:16px}
+.rail-connector{width:9px}
+.loop-main{padding:20px 16px 0}
+.goal-bar{gap:9px;padding-bottom:17px;align-items:flex-start}
+.small-icon{width:31px;height:31px;border-radius:8px;margin-top:2px}
+.small-icon svg{width:20px;height:20px}
+.goal-bar>div>span{font-size:10px}
+.goal-bar strong{font-size:11px;line-height:1.7}
+.state-pill{font-size:8px;padding:4px 7px;margin-top:2px}
+.decision-stage{gap:8px;grid-template-columns:1fr 16px 1.06fr;padding:21px 0 18px;min-height:230px}
+.card-label{font-size:9px;gap:4px;margin-bottom:10px}
+.card-label svg{width:13px;height:13px}
+.decision-arrow svg{width:16px}
+.app-top{padding:0 7px;height:20px;gap:3px}
+.app-top>span{width:3px;height:3px}
+.app-top>b{font-size:6px;margin-left:6px}
+.app-body{min-height:116px}
+.app-sidebar{width:20px;padding:12px 5px}
+.app-sidebar i{width:9px;height:7px;margin-bottom:9px}
+.app-content{padding:9px 7px}
+.app-search{font-size:6px;height:21px;gap:2px;padding:2px 3px}
+.app-search svg{width:9px;height:9px}
+.part-preview{height:57px}
+.part-preview>svg{width:36px;height:36px}
+.app-save{font-size:6px}
+.app-save b{font-size:6px;padding:1px 4px}
+.observation-caption{font-size:8px;margin-top:7px}
+.choice-options{gap:5px;min-height:113px}
+.choice-option{font-size:9px;padding:8px 6px;gap:4px;line-height:1.6;border-radius:6px}
+.choice-option>span{font-size:7px}
+.choice-option>svg{width:11px;height:11px}
+.choice-footer{font-size:8px;gap:4px;margin-top:7px;line-height:1.7}
+.choice-footer .status-dot{display:none}
+.action-timeline{gap:4px;margin-bottom:18px}
+.action-step{padding:7px 5px;border-radius:5px}
+.action-step>span{font-size:7px}
+.action-step>strong{font-size:8px}
+.loop-transport{font-size:9px;padding-block:13px;gap:7px}
+.loop-transport>div{gap:6px}
+.model-mini{width:22px;height:23px}
+.model-mini svg{width:15px;height:15px}
+.loop-transport>button{font-size:9px;gap:8px}
+.mechanism-caption{flex-direction:column;gap:9px;margin-top:16px}
+.mechanism-caption>p{font-size:11px;line-height:1.9}
+.mechanism-caption>span{font-size:9px;text-align:left;max-width:none}
+.film-heading-right{gap:10px}
+.text-link{font-size:11px}
+.film-wrap{border-radius:10px}
+.film-caption{flex-direction:column;gap:7px;font-size:10px;margin-top:12px}
+.case-task{padding:13px;gap:10px;border-radius:11px;margin-bottom:15px}
+.case-task-icon{width:34px;height:34px;border-radius:9px}
+.case-task-icon svg{width:22px;height:22px}
+.case-task>div>span{font-size:9px}
+.case-task strong{font-size:10px;line-height:1.7}
+.case-workspace{border-radius:11px}
+.workspace-toolbar{padding:12px}
+.workspace-toolbar>div{gap:8px}
+.workspace-toolbar strong{font-size:10px}
+.workspace-toolbar .status-dot{width:5px;height:5px}
+.workspace-toolbar>button{font-size:9px;gap:5px}
+.workspace-toolbar>button>svg{width:12px;height:12px}
+.workspace-tabs{grid-template-columns:repeat(5,1fr)}
+.workspace-tab{padding:10px 3px}
+.workspace-tab>span{font-size:9px;text-align:center}
+.workspace-tab b{font-size:8px;margin-bottom:3px}
+.workspace-tab[aria-selected=true]:before{left:8px;right:8px}
+.workspace-transport{padding:12px;gap:9px}
+.round-play{width:26px;height:26px}
+.round-play svg{width:13px;height:13px}
+.workspace-transport output{font-size:8px}
+.workspace-transport select{font-size:9px;max-width:40px}
+.chapter-jumps{gap:6px;margin-top:12px}
+.chapter-jumps button{padding:10px 8px;font-size:9px;line-height:1.6;gap:6px;align-items:flex-start;flex-direction:column}
+.chapter-jumps button>span{font-size:8px}
+.chapter-jumps button>svg{display:none}
+.case-note{font-size:9px;margin-top:13px}
+.result-section{margin-top:55px;gap:20px}
+.result-copy{grid-template-columns:1fr;gap:0}
+.result-copy .eyebrow{font-size:9px}
+.result-copy h3{font-size:29px;margin:13px 0}
+.result-copy>p:not(.eyebrow){font-size:12px;max-width:300px;margin:0}
+.result-specs{margin-top:20px;gap:32px}
+.result-specs strong{font-size:24px}
+.result-specs span{font-size:9px}
+.result-boundary{font-size:9px;margin-top:19px;max-width:none}
+.result-viewer{border-radius:13px}
+.result-toolbar{padding:12px;gap:7px}
+.result-toolbar>div{gap:12px}
+.result-toolbar button{font-size:10px}
+.model-mount{height:250px}
+.model-readout{top:49px;left:14px;right:14px;font-size:8px}
+.model-readout strong{font-size:17px}
+.gear-controls{padding:0 11px 12px;gap:3px}
+.gear-controls button{font-size:10px;min-height:29px;padding:5px 0;border-radius:4px}
+.model-transport{padding:12px;gap:10px}
+.model-transport button{font-size:10px;gap:5px}
+.model-transport button svg{width:13px;height:13px}
+.model-transport output{font-size:9px}
+.closing{padding-top:65px;padding-bottom:65px}
+.closing h2{font-size:29px}
+.closing>p:not(.eyebrow){font-size:11px;margin-top:15px}
+.closing-actions{gap:9px;margin-top:25px}
+.closing-actions .button{font-size:11px;padding:11px 13px;min-height:44px;gap:8px}
+.closing-actions .button svg{width:17px;height:17px}
+.closing-mark{width:44px;height:48px;border-radius:13px;margin-bottom:20px}
+.closing-mark svg{width:28px;height:28px}
+.footer-top{padding:22px 0}
+.footer-top .brand{font-size:22px}
+.footer-top>span{display:none}
+.footer-top>a:last-child{font-size:10px}
+.footer summary{font-size:10px}
+.source-copy{font-size:10px}
+.footer-bottom{font-size:9px;gap:10px}
+.scene-connections{opacity:.8}
+}
+@media(min-width:1600px){
+.workers{top:342px}
+}
+@media(max-width:1100px){
+.workers{top:310px}
+.hero-description{font-size:14px}
+.choice-option{font-size:11px}
+.goal-bar strong{font-size:13px}
+}
+@media(max-width:820px){
+.workers{top:320px}
+.section-intro{font-size:14px}
+.choice-option{font-size:12px}
+.hero-description{font-size:15px}
+.benefit-strip span>span{font-size:11px}
+}
+@media(max-width:520px){
+.workers{top:278px}
+.hero-description{font-size:14px}
+.hero-lead{font-size:20px}
+.benefit-strip span>span{font-size:12px}
+.section-intro{font-size:14px}
+.goal-bar strong{font-size:12px}
+.choice-option{font-size:10px}
+.choice-footer,.observation-caption{font-size:9px}
+.mechanism-caption>p{font-size:12px}
+.case-note,.film-caption{font-size:11px}
+.result-copy>p:not(.eyebrow){font-size:13px}
+.result-boundary{font-size:10px}
+.closing>p:not(.eyebrow){font-size:12px}
+.source-copy{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+html{scroll-behavior:auto}
+*,*:before,*:after{animation:none!important;transition:none!important}
+}
