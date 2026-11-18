@@ -2,203 +2,252 @@
 
 (() => {
   const $ = id => document.getElementById(id);
-  const icon = name => `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;
+  const icon = name => '<svg aria-hidden="true"><use href="#i-' + name + '"/></svg>';
   const reduced = matchMedia("(prefers-reduced-motion:reduce)").matches;
-  const pinned = matchMedia("(min-width:1000px) and (min-height:720px) and (prefers-reduced-motion:no-preference)");
   const clamp = value => Math.max(0, Math.min(1, value));
-  const smooth = (start, end, value) => { const t = clamp((value - start) / (end - start)); return t * t * (3 - 2 * t); };
-  const story = $("story"), stage = document.querySelector(".mechanism-stage");
-  const chapterPositions = [0, .28, .46, .69, .96];
-  const chapters = [
-    ["THINK WITH INTENT", "先明确目标，<br>再开始行动。", "慢模型理解任务，提供准确输入与返回条件。把明确的一小段工作交给执行端。", "思考目标，而不是预编每次点击。", "brain"],
-    ["THINK WITH INTENT", "先明确目标，<br>再开始行动。", "慢模型理解任务，提供准确输入与返回条件。把明确的一小段工作交给执行端。", "思考目标，而不是预编每次点击。", "brain"],
-    ["ROUTE WITH PURPOSE", "分工不同，<br>目标一致。", "界面操作交给 JEV，代码与文件处理走 CLI。不同路径共享目标与执行反馈。", "一个子目标，选择当前合适的路径。", "route"],
-    ["ACT CONTINUOUSLY", "目标不变，<br>动作接着发生。", "每次新观察进入，JEV 选择下一动作。子目标内持续推进，减少逐动作的慢模型往返。", "少重复规划，少生成动作长文本。", "bolt"],
-    ["CLOSE THE LOOP", "不是做过，<br>而是有证据。", "完成、遇阻或缺少信息时，带执行证据返回。独立验证后更新记忆，再决定下一步。", "连续执行有边界，任务状态有依据。", "check"],
-  ];
+  const hero = $("story"), board = $("architecture-board"), theater = $("execution-theater");
   const actions = [
-    ["搜索", "搜索界面已就绪", "点击零件搜索框", "展开无关分类", "返回上层规划", "焦点读回 → 接收新观察"],
-    ["输入", "输入框已获得焦点", "输入已提供的零件编号", "修改其他字段", "请求补充信息", "字段值读回 → 接收新观察"],
-    ["选择", "搜索结果已经出现", "选择匹配的零件", "点击无关分类", "请求更多观察", "选中状态读回 → 接收新观察"],
-    ["放置", "当前零件已被选中", "在目标位置放置零件", "重复搜索同一零件", "返回上层规划", "执行回执返回 → 接收新观察"],
-    ["保存", "本段放置操作已完成", "保存当前模块", "关闭未保存工程", "重复放置零件", "保存证据返回 → 按条件检查"],
+    {label:"聚焦", observation:"零件库已打开，搜索框可用", choices:["聚焦零件搜索框","展开其他分类","返回外层规划"], receipt:"焦点读回：零件搜索框已激活", generated:"根据当前截图，先定位零件库上方的搜索框，再点击该框以建立输入焦点。确认焦点后，下一步才能写入已提供的零件编号。"},
+    {label:"输入", observation:"搜索框已获得焦点，输入值由 Planner 提供", choices:["输入零件编号 64179","修改模型名称","重新打开零件库"], receipt:"字段读回：64179，与给定编号一致", generated:"当前焦点已在零件搜索框。读取子目标提供的准确编号 64179，将该编号写入当前字段，再检查字段值和对应搜索结果。"},
+    {label:"选择", observation:"匹配搜索条件的零件已出现", choices:["选择编号匹配的框架","选择旁边的普通砖块","重复输入相同编号"], receipt:"选中状态读回：目标框架已选中", generated:"查看更新后的搜索结果，辨认与编号匹配的框架，点击选中该零件。不要选择旁边的普通砖块，也不需要再次输入相同编号。"},
+    {label:"放置", observation:"目标框架已选中，装配区可操作", choices:["在指定装配位置放置","切回搜索框","再次选择相同零件"], receipt:"执行回执返回：零件已放入装配区", generated:"根据子目标提供的位置与当前装配区，放置已经选中的框架。执行后检查新观察，确认零件出现，再进入本段的保存操作。"},
+    {label:"保存", observation:"本段放置完成，当前工程需要保存", choices:["保存当前模块","关闭未保存的工程","再次放置同一零件"], receipt:"保存证据返回：交由外层核验本段结果", generated:"当前放置操作已结束。执行工程保存，并将保存后的观察与回执交回外层，核验是否满足本段目标；不要仅凭已点击保存就宣布整题完成。"},
   ];
-  let viewer = null, owner = "hero", target = pinned.matches ? 0 : .28, progress = target;
-  let phase = -1, route = "gui", action = -1, frameId = 0, last = 0;
-  let introAge = 0, introFraction = reduced ? 1 : 0, localAge = 0, manualCamera = false;
-  let wiresDirty = true, lastWireTime = 0;
-  let sceneTime = -1, cameraAspect = 0, localTimer = null;
+  let viewer = null, owner = "hero", heroVisible = true, introAge = 0, introFraction = reduced ? 1 : 0;
+  let manualCamera = false, introFrame = 0, lastIntro = 0, route = "gui";
+  let mode = "jev", action = 0, blocked = false, playing = false, loopTimer = null, loopStarted = false;
 
-  function showAction(index) {
-    if (index === action) return;
-    action = index;
-    const item = actions[index];
-    $("observation-text").textContent = item[1];
-    $("receipt-text").textContent = item[5];
-    $("local-choice").innerHTML = item.slice(2, 5).map((text, i) => `<div class="choice-row ${i === 0 ? "selected" : ""}"><span>0${i + 1}</span>${text}${i === 0 ? icon("check") : ""}</div>`).join("");
-    $("action-beads").innerHTML = actions.map((entry, i) => `<span class="action-bead ${i < index ? "done" : i === index ? "active" : ""}">${entry[0]}</span>`).join("");
-    if (!reduced) $("local-choice").animate([{opacity:.3,transform:"translateY(5px)"},{opacity:1,transform:"none"}],{duration:260,easing:"ease-out"});
+  function line(path, type = "") {
+    return '<path class="arch-wire ' + type + '" d="' + path + '"/>';
   }
 
-  function changeChapter(next) {
-    if (next === phase) return;
-    phase = next;
-    const item = chapters[phase];
-    $("chapter-kicker").textContent = item[0]; $("chapter-title").innerHTML = item[1];
-    $("chapter-description").textContent = item[2]; $("chapter-note").innerHTML = `${icon(item[4])}<span>${item[3]}</span>`;
-    document.querySelectorAll(".chapter-nav [data-chapter]").forEach(button => button.setAttribute("aria-pressed", String(+button.dataset.chapter === phase)));
-    stage.dataset.phase = phase;
-    $("slow-status").textContent = phase === 3 ? "目标已给出 · 等待执行反馈" : phase === 4 ? "独立验证 · 更新任务记忆" : "理解任务 · 明确目标";
-    document.querySelector(".slow-indicator").style.opacity = phase === 3 ? .2 : 1;
-    if (phase === 3) localAge = 0;
-    wiresDirty = true;
-  }
-
-  function position(node, opacity, transform) {
-    node.style.opacity = opacity;
-    node.style.transform = transform;
-    node.style.pointerEvents = opacity > .65 ? "auto" : "none";
-    node.style.visibility = opacity < .015 ? "hidden" : "visible";
-    node.inert = opacity < .2;
-  }
-
-  function drawWires() {
-    const svg = stage.querySelector(".mechanism-wires"), root = svg.getBoundingClientRect();
-    svg.setAttribute("viewBox", `0 0 ${root.width} ${root.height}`);
-    const box = selector => {
-      const r = stage.querySelector(selector).getBoundingClientRect();
-      return {x:r.x-root.x,y:r.y-root.y,w:r.width,h:r.height};
+  function drawArchitecture() {
+    if (innerWidth < 1000) { $("arch-wires").innerHTML = ""; return; }
+    const root = board.getBoundingClientRect();
+    board.querySelector(".architecture-wires").setAttribute("viewBox", "0 0 " + root.width + " " + root.height);
+    const bounds = id => {
+      const rect = $(id).getBoundingClientRect();
+      return {x:rect.x-root.x, y:rect.y-root.y, w:rect.width, h:rect.height};
     };
-    const task = box(".task-ticket"), slow = box(".slow-node"), goal = box(".goal-ticket"), router = box(".route-heading"), evidence = box(".evidence-ticket");
-    const cx = b => b.x + b.w/2, bottom = b => b.y+b.h;
-    const wires = [];
-    if (phase <= 1) {
-      wires.push([`M${cx(task)} ${bottom(task)+4}V${slow.y-6}`,""]);
-      wires.push([`M${cx(slow)} ${bottom(slow)+5}V${goal.y-6}`,""]);
+    const top = ["arch-input", "arch-slow", "arch-goal", "arch-router"].map(bounds);
+    const lanes = ["arch-jev", "arch-cli", "arch-extension"].map(bounds);
+    const runtime = bounds("arch-runtime"), evidence = bounds("arch-evidence");
+    const cx = node => node.x + node.w/2, cy = node => node.y + node.h/2;
+    const bottom = node => node.y + node.h;
+    const paths = [];
+    for (let i = 0; i < top.length-1; i++) {
+      paths.push(line("M" + (top[i].x+top[i].w+3) + " " + cy(top[i]) + "H" + (top[i+1].x-6)));
     }
-    if (phase === 2) wires.push([`M${cx(goal)} ${bottom(goal)+5}V${router.y-6}`,""]);
-    if (phase === 3 && route === "gui") {
-      const obs = box(".observation"), receipt = box(".local-receipt"), loop = box(".local-loop");
-      const edge = -8, port = loop.x-3;
-      wires.push([`M${port} ${receipt.y+receipt.h/2}H${edge+7}Q${edge} ${receipt.y+receipt.h/2} ${edge} ${receipt.y+receipt.h/2-7}V${obs.y+obs.h/2+7}Q${edge} ${obs.y+obs.h/2} ${edge+7} ${obs.y+obs.h/2}H${port}`,"flow"]);
+    const router = top[3], bus = (bottom(router)+lanes[0].y)/2;
+    lanes.forEach((lane, i) => {
+      const active = ["gui","cli","extension"][i] === route;
+      paths.push(line("M" + cx(router) + " " + (bottom(router)+3) + "V" + bus + "H" + cx(lane) + "V" + (lane.y-7), active ? "active" : ""));
+      paths.push(line("M" + cx(lane) + " " + (bottom(lane)+3) + "V" + (runtime.y-7), active ? "active" : ""));
+    });
+    const localX = runtime.x-28, localY = cy(runtime), jevY = cy(lanes[0]);
+    if (route === "gui") {
+      paths.push(line("M" + (runtime.x-4) + " " + localY + "H" + (localX+9) + "Q" + localX + " " + localY + " " + localX + " " + (localY-9) + "V" + (jevY+9) + "Q" + localX + " " + jevY + " " + (localX+9) + " " + jevY + "H" + (lanes[0].x-7), "local"));
     }
-    if (phase === 4) {
-      const edge = root.width-3;
-      wires.push([`M${evidence.x+evidence.w+3} ${evidence.y+evidence.h/2}H${edge-10}Q${edge} ${evidence.y+evidence.h/2} ${edge} ${evidence.y+evidence.h/2-10}V${slow.y+slow.h/2+10}Q${edge} ${slow.y+slow.h/2} ${edge-10} ${slow.y+slow.h/2}H${slow.x+slow.w+6}`,"return"]);
-    }
-    $("story-wires").innerHTML = wires.map(([path,type])=>`<path class="story-wire ${type}" d="${path}"/>`).join("");
-    wiresDirty = false;
+    paths.push(line("M" + cx(runtime) + " " + (bottom(runtime)+3) + "V" + (evidence.y-7)));
+    const outerX = root.width-18, slowX = cx(top[1]), outerY = 30;
+    paths.push(line("M" + (evidence.x+evidence.w+3) + " " + cy(evidence) + "H" + (outerX-10) + "Q" + outerX + " " + cy(evidence) + " " + outerX + " " + (cy(evidence)-10) + "V" + (outerY+10) + "Q" + outerX + " " + outerY + " " + (outerX-10) + " " + outerY + "H" + (slowX+10) + "Q" + slowX + " " + outerY + " " + slowX + " " + (outerY+10) + "V" + (top[1].y-7), "return"));
+    $("arch-wires").innerHTML = paths.join("");
   }
 
-  function paint(now) {
-    frameId = 0;
-    const elapsed = last ? Math.min(now-last,2000) : 16; last = now;
-    const moving = Math.abs(target-progress) > .00015;
-    progress = reduced ? target : moving ? progress + (target-progress)*(1-Math.exp(-elapsed/115)) : target;
-    const p = progress;
-    changeChapter(p < .18 ? 0 : p < .39 ? 1 : p < .55 ? 2 : p < .86 ? 3 : 4);
-    const heroFade = 1-smooth(.04,.14,p), enter = smooth(.16,.27,p), dock = smooth(.07,.36,p);
-    position(document.querySelector(".hero-copy"), pinned.matches ? heroFade : 1, `translateY(${-dock*45}px)`);
-    position(document.querySelector(".assembly-stage"), pinned.matches ? 1-smooth(.4,.58,p) : 1, `translate(${-dock*43}vw,${dock*25}vh) scale(${1-dock*.62})`);
-    const caption = document.querySelector(".assembly-caption"), captionOpacity = 1-smooth(.06,.16,p);
-    caption.style.opacity = captionOpacity; caption.inert = pinned.matches && captionOpacity<.2;
-    position($("execution"), pinned.matches ? enter : 1, `translateY(${(1-enter)*35}px)`);
-    const stageEnter = smooth(.12,.24,p);
-    position(stage, pinned.matches ? stageEnter : 1, `translateY(${(1-stageEnter)*55}px)`);
-    position(stage.querySelector(".task-ticket"), 1-smooth(.32,.47,p), `translateY(${-smooth(.28,.47,p)*45}px)`);
-    const slowOpacity = 1-smooth(.28,.34,p)+.72*smooth(.65,.69,p)+.28*smooth(.86,.96,p);
-    position(stage.querySelector(".slow-node"), slowOpacity, `translateY(${smooth(.48,.65,p)*7}px) scale(${1-smooth(.28,.34,p)*.1+smooth(.86,.98,p)*.1})`);
-    position(stage.querySelector(".goal-ticket"), 1, `translateY(${-smooth(.36,.64,p)*220}px)`);
-    const routeOpacity = smooth(.29,.4,p)*(1-smooth(.53,.65,p));
-    position(stage.querySelector(".route-fan"), routeOpacity, `translateY(${-smooth(.32,.56,p)*115}px) scale(${1-smooth(.54,.65,p)*.08})`);
-    const localOpacity = smooth(.51,.65,p)*(1-smooth(.79,.87,p));
-    position(stage.querySelector(".local-loop"), route === "gui" ? localOpacity : 0, `translateY(${(1-smooth(.51,.65,p))*90-smooth(.79,.87,p)*40}px) scale(${.94+smooth(.51,.65,p)*.06})`);
-    position(stage.querySelector(".tool-preview"), route === "gui" ? 0 : localOpacity, `translateY(${(1-smooth(.51,.65,p))*70}px)`);
-    position(stage.querySelector(".evidence-ticket"), smooth(.85,.96,p), `translateY(${(1-smooth(.85,.96,p))*55}px)`);
-    if (phase === 3 && !document.hidden) localAge += reduced ? 0 : elapsed;
-    showAction(reduced ? 1 : Math.floor(localAge/1450)%actions.length);
-    if (viewer && owner === "hero") {
-      if (!document.hidden) introAge += elapsed;
-      introFraction = Math.max(introFraction, reduced ? 1 : Math.min(introAge/8500,1), pinned.matches ? smooth(0,.18,p) : 0);
-      const nextTime = 12+168*introFraction;
-      const aspect = $("hero-model-mount").clientWidth/$("hero-model-mount").clientHeight;
-      if (Math.abs(nextTime-sceneTime)>.02 || Math.abs(aspect-cameraAspect)>.01) {
-        viewer.seek(nextTime); sceneTime=nextTime;
-        cameraAspect=aspect;
-        if (!manualCamera) viewer.setCamera({yaw:-1.22+introFraction*.1,elevation:.86-introFraction*.22,radius:(.80-introFraction*.24)*Math.max(1,1.5/aspect),target:[-.03-introFraction*.035,.005+introFraction*.009,.015+introFraction*.005]});
-      }
-    }
-    if (wiresDirty || (moving && now-lastWireTime>70)) { drawWires(); lastWireTime = now; }
-    const filmTop = $("film-player").getBoundingClientRect().top;
-    const filmEntrance = clamp((innerHeight-filmTop)/(innerHeight*.65));
-    document.querySelector(".film-wrap").style.setProperty("--film-scale", reduced ? 1 : .96+filmEntrance*.04);
-    if (moving || (!document.hidden && viewer && owner==="hero" && introFraction<1)) schedule();
-    else if (!document.hidden && phase===3 && !reduced && story.getBoundingClientRect().bottom>0) localTimer=setTimeout(schedule,Math.max(40,1450-localAge%1450));
-  }
-  function schedule() { clearTimeout(localTimer); if (!frameId) frameId = requestAnimationFrame(paint); }
-  function readScroll() {
-    if (pinned.matches) { const r = story.getBoundingClientRect(); target = clamp(-r.top/(r.height-innerHeight)); }
-    schedule();
-  }
-  function selectChapter(index) {
-    if (pinned.matches) scrollTo({top:scrollY+story.getBoundingClientRect().top+(story.offsetHeight-innerHeight)*chapterPositions[index],behavior:"smooth"});
-    else { target = chapterPositions[index]; schedule(); }
-  }
-  document.querySelectorAll("[data-chapter]").forEach(button => button.addEventListener("click",event=>{
-    event.preventDefault(); selectChapter(+button.dataset.chapter);
-    if (button.tagName==="A" && !pinned.matches) $("execution").scrollIntoView({behavior:reduced?"instant":"smooth"});
+  board.querySelectorAll("[data-route]").forEach(button => button.addEventListener("click", () => {
+    route = button.dataset.route;
+    board.dataset.route = route;
+    board.querySelectorAll("[data-route]").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
+    $("route-explanation").textContent = route === "gui"
+      ? "JEV 在同一子目标内接收新观察、连续选择动作；局部动作不逐次触发外层规划。"
+      : route === "cli"
+      ? "CLI 路径由慢模型提供代码与命令，同样经过共享执行器、预算与真实回执，不绕过外层核验。"
+      : "注册组件时声明能力、工具权限与预算。这里展示扩展接口，不代表已经接入额外生产执行器。";
+    board.querySelector(".inner-loop-label").style.opacity = route === "gui" ? 1 : .3;
+    drawArchitecture();
   }));
-  document.querySelector('nav a[href="#execution"]').onclick = event => { event.preventDefault(); selectChapter(1); if (!pinned.matches) $("execution").scrollIntoView({behavior:reduced?"instant":"smooth"}); };
-  stage.querySelectorAll("button[data-route]").forEach(button => button.onclick = () => {
-    route = button.dataset.route; stage.dataset.route = route;
-    stage.querySelectorAll("button[data-route]").forEach(item=>item.setAttribute("aria-pressed",String(item===button)));
-    $("route-description").textContent = route === "gui" ? "界面操作，交给 JEV 连续选择。" : route === "cli" ? "代码由慢模型提供，工具执行并返回回执。" : "按组件接口接入其他执行器，共享回执。";
-    $("tool-title").textContent = route === "cli" ? "CLI 工具路径" : "可扩展执行路径";
-    $("tool-description").textContent = route === "cli" ? "慢模型提供代码与准确输入，工具执行后返回真实回执。" : "按任务需求接入执行组件；这里展示扩展接口，不代表已运行额外执行器。";
-    wiresDirty = true; schedule();
+  new ResizeObserver(drawArchitecture).observe(board);
+
+  function renderLoop() {
+    const item = actions[action], generated = mode === "generated";
+    theater.dataset.mode = mode;
+    theater.dataset.blocked = String(blocked);
+    $("slow-status").textContent = blocked ? "收到阻塞证据" : generated ? "生成第 " + (action+1) + " 个动作" : action === 4 ? "等待本段核验" : "子目标保持不变";
+    $("plan-state").textContent = blocked ? "补充观察后再决定" : generated ? "逐步请求动作生成" : "不逐动作重新规划";
+    $("work-title").textContent = blocked ? "停止局部执行，带证据返回" : generated ? "慢模型生成下一动作" : "JEV 选择下一动作";
+    $("work-icon").innerHTML = icon(generated ? "brain" : "bolt");
+    $("observation-text").textContent = blocked ? "当前候选里缺少目标控件" : item.observation;
+    $("decision-title").textContent = blocked ? "本次返回条件已触发" : generated ? "为当前一步生成操作说明" : "从当前候选中选择";
+    $("receipt-text").textContent = blocked ? "停止重复点击；将缺失控件与最后观察返回外层" : item.receipt;
+    $("local-choice").hidden = generated && !blocked;
+    $("generation-copy").hidden = !generated || blocked;
+    $("generation-copy").textContent = item.generated;
+    const choices = blocked ? ["返回外层补充观察","重复点击上次位置","未确认就重放动作"] : item.choices;
+    $("local-choice").innerHTML = choices.map((text, i) => '<div class="choice-row ' + (i === 0 ? "selected" : "") + '"><span>0' + (i+1) + '</span>' + text + (i === 0 ? icon("check") : "") + '</div>').join("");
+    $("action-beads").innerHTML = actions.map((entry, i) => '<button class="action-bead ' + (i < action ? "done" : i === action ? "active" : "") + '" data-action="' + i + '" aria-pressed="' + (i === action) + '">' + entry.label + '</button>').join("");
+    $("mini-search").classList.toggle("focused", action < 2);
+    $("mini-search-value").textContent = action > 0 ? "64179" : "搜索零件";
+    $("mini-parts").classList.toggle("visible", action > 0);
+    $("mini-parts").classList.toggle("chosen", action > 1);
+    $("placed-part").classList.toggle("visible", action > 2);
+    $("saved-mark").classList.toggle("visible", action === 4 && !blocked);
+    $("mini-canvas-status").textContent = action > 2 ? "目标框架已放置" : "装配区";
+    $("mode-explanation").textContent = blocked
+      ? "目标缺失时停止局部循环。把阻塞与新观察交回外层，补充信息或调整路径；不靠重复点击继续。"
+      : generated
+      ? "对照示意：每一步请求慢模型生成操作说明。这里比较调用结构，不比较真实秒数或 token 数量。"
+      : "子目标与输入保持不变。JEV 连续选择具体动作，减少逐动作慢模型往返与动作长文本生成；阶段返回后再由外层核验。";
+    $("loop-block").innerHTML = icon("refresh") + (blocked ? "恢复演示" : "模拟遇阻");
+    $("loop-play").innerHTML = playing ? "Ⅱ" : icon("play");
+    $("loop-play").setAttribute("aria-label", playing ? "暂停连续执行示意" : "播放连续执行示意");
+  }
+
+  function pauseLoop() {
+    clearTimeout(loopTimer);
+    playing = false;
+    renderLoop();
+  }
+
+  function advanceLoop() {
+    if (!playing || blocked || document.hidden) return;
+    if (action === actions.length-1) { pauseLoop(); return; }
+    action++;
+    renderLoop();
+    loopTimer = setTimeout(advanceLoop, 1550);
+  }
+
+  function playLoop() {
+    clearTimeout(loopTimer);
+    if (blocked) blocked = false;
+    if (action === actions.length-1) action = 0;
+    playing = true;
+    renderLoop();
+    loopTimer = setTimeout(advanceLoop, 1550);
+  }
+
+  document.querySelectorAll(".mode-switch [data-mode]").forEach(button => button.addEventListener("click", () => {
+    mode = button.dataset.mode;
+    document.querySelectorAll(".mode-switch [data-mode]").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
+    blocked = false;
+    action = 0;
+    pauseLoop();
+  }));
+  $("action-beads").addEventListener("click", event => {
+    const button = event.target.closest("[data-action]");
+    if (!button) return;
+    action = +button.dataset.action;
+    blocked = false;
+    pauseLoop();
   });
-  $("intro-replay").onclick = () => { introAge = 0; introFraction = 0; manualCamera = false; schedule(); };
-  addEventListener("scroll",readScroll,{passive:true});
-  addEventListener("resize",()=>{ if (!pinned.matches && target===0) target=.28; wiresDirty=true; readScroll(); });
-  new ResizeObserver(()=>{wiresDirty=true;schedule();}).observe(stage);
-  document.addEventListener("visibilitychange",()=>{last=0;if(document.hidden)viewer?.play(false);else schedule();});
+  $("loop-play").onclick = () => playing ? pauseLoop() : playLoop();
+  $("loop-replay").onclick = () => { action = 0; blocked = false; reduced ? pauseLoop() : playLoop(); };
+  $("loop-block").onclick = () => { blocked = !blocked; pauseLoop(); };
+  new IntersectionObserver(entries => {
+    if (!entries[0].isIntersecting) { if (playing) pauseLoop(); return; }
+    if (!loopStarted && !reduced) { loopStarted = true; playLoop(); }
+  }, {threshold:.35}).observe(theater);
+
+  function paintIntro(now) {
+    introFrame = 0;
+    if (!viewer || owner !== "hero" || !heroVisible || document.hidden) { lastIntro = 0; return; }
+    const elapsed = lastIntro ? Math.min(now-lastIntro, 1000) : 0;
+    lastIntro = now;
+    introAge += elapsed;
+    introFraction = reduced ? 1 : clamp(introAge/7600);
+    viewer.seek(180*introFraction);
+    if (!manualCamera) {
+      const aspect = Math.min($("hero-model-mount").clientWidth, innerWidth-32)/$("hero-model-mount").clientHeight;
+      viewer.setCamera({yaw:-1.30+introFraction*.16,elevation:.82-introFraction*.14,radius:(.65-introFraction*.23)*Math.max(1,1.55/aspect),target:[-.065,.014,.02]});
+    }
+    if (introFraction < 1) introFrame = requestAnimationFrame(paintIntro);
+  }
+
+  function scheduleIntro() {
+    if (!introFrame) introFrame = requestAnimationFrame(paintIntro);
+  }
 
   async function initScene() {
-    window.gearboxData ||= await fetch(`${document.documentElement.dataset.assets}model.json`).then(response=>response.json());
-    viewer = window.GearboxViewer.create($("hero-model-mount"),{theme:"atlas",onUpdate:state=>{
-      $("assembly-count").textContent = `${state.placed} / ${state.pieces} 件`;
-      window.dispatchEvent(new CustomEvent("gearbox-update",{detail:state}));
+    window.gearboxData ||= await fetch(document.documentElement.dataset.assets + "model.json").then(response => response.json());
+    viewer = window.GearboxViewer.create($("hero-model-mount"), {theme:"atlas", onUpdate:state => {
+      $("assembly-count").textContent = state.placed + " / " + state.pieces + " 件";
+      window.dispatchEvent(new CustomEvent("gearbox-update", {detail:state}));
     }});
-    viewer.renderer.toneMappingExposure = 1.08;
-    viewer.setMode("assembly"); viewer.play(false); viewer.seek(reduced ? 180 : 12);
-    viewer.setCamera({yaw:-1.22,elevation:.86,radius:.80});
+    viewer.renderer.toneMappingExposure = 1.02;
+    viewer.scene.children.filter(node => node.isLight).forEach(light => {
+      if (light.isHemisphereLight) light.intensity = 1.6;
+      else if (light.castShadow) { light.intensity = 3.6; light.shadow.mapSize.set(2048,2048); }
+      else light.intensity *= .8;
+    });
+    viewer.setMode("assembly");
+    viewer.play(false);
+    viewer.seek(reduced ? 180 : 0);
+    viewer.setCamera({yaw:-1.30,elevation:.82,radius:.65});
     $("hero-model-loading").remove();
     document.querySelector(".assembly-poster").style.opacity = 0;
-    viewer.canvas.addEventListener("pointerdown",()=>{manualCamera=true;});
-    introAge=0;last=0;schedule();
+    viewer.canvas.addEventListener("pointerdown", () => { manualCamera = true; });
+    introAge = reduced ? 7600 : 0;
+    scheduleIntro();
     return viewer;
   }
+
   function mountResult() {
-    if (!viewer || owner==="result") return;
-    owner="result";introFraction=1;viewer.play(false);viewer.moveTo($("model-mount"));viewer.setMode("motion");
+    if (!viewer || owner === "result") return;
+    owner = "result";
+    viewer.play(false);
+    viewer.moveTo($("model-mount"));
+    viewer.setMode("motion");
+    viewer.setView("overall");
     $("model-loading")?.remove();
+    document.querySelector(".assembly-poster").style.opacity = 1;
   }
+
   function mountHero() {
-    if (!viewer || owner==="hero") return;
-    owner="hero";manualCamera=false;sceneTime=-1;viewer.play(false);viewer.moveTo($("hero-model-mount"));viewer.setMode("assembly");schedule();
+    if (!viewer || owner === "hero") return;
+    owner = "hero";
+    manualCamera = false;
+    introAge = 7600;
+    viewer.play(false);
+    viewer.moveTo($("hero-model-mount"));
+    viewer.setMode("assembly");
+    document.querySelector(".assembly-poster").style.opacity = 0;
+    scheduleIntro();
   }
-  const ready = initScene().catch(()=>{
-    $("hero-model-loading").textContent="交互场景暂未载入，可继续观看影片。";
+
+  const ready = initScene().catch(() => {
+    $("hero-model-loading").textContent = "交互场景暂未载入，可继续观看影片。";
     return null;
   });
-  new IntersectionObserver(entries=>{if(entries[0].isIntersecting)ready.then(mountHero);}).observe(document.querySelector(".hero-copy"));
+  new IntersectionObserver(entries => {
+    heroVisible = entries[0].isIntersecting;
+    if (heroVisible) ready.then(() => { mountHero(); scheduleIntro(); });
+    else lastIntro = 0;
+  }).observe(hero);
+  $("intro-replay").onclick = () => {
+    introAge = 0; introFraction = reduced ? 1 : 0; manualCamera = false; lastIntro = 0;
+    scheduleIntro();
+  };
+  function readScroll() {
+    document.querySelector(".header").classList.toggle("scrolled", scrollY > 30);
+    const progress = clamp(-hero.getBoundingClientRect().top/hero.offsetHeight);
+    if (!reduced) document.querySelector(".assembly-stage").style.transform = "translateY(" + (progress*70) + "px)";
+  }
+  addEventListener("scroll", readScroll, {passive:true});
+  addEventListener("resize", () => { if (owner === "hero") scheduleIntro(); });
+  document.addEventListener("visibilitychange", () => {
+    lastIntro = 0;
+    if (document.hidden) { pauseLoop(); viewer?.play(false); }
+    else scheduleIntro();
+  });
   if (!reduced) {
     document.documentElement.classList.add("motion-enabled");
-    const observer = new IntersectionObserver(entries=>entries.forEach(entry=>{
-      if(entry.isIntersecting){entry.target.classList.add("revealed");observer.unobserve(entry.target);}
-    }),{threshold:.12});
-    document.querySelectorAll(".benefits>div,.section-heading,.result-copy,.closing").forEach(node=>{node.dataset.reveal="";observer.observe(node);});
+    const observer = new IntersectionObserver(entries => entries.forEach(entry => {
+      if (entry.isIntersecting) { entry.target.classList.add("revealed"); observer.unobserve(entry.target); }
+    }), {threshold:.1});
+    document.querySelectorAll(".overview-heading,.overview-copy,.section-heading,.result-copy,.closing").forEach(node => {
+      node.dataset.reveal = ""; observer.observe(node);
+    });
   }
-  showAction(0);readScroll();
-  window.JevDuoScene = {ready,mountResult,selectChapter,get viewer(){return viewer;},state:()=>({progress,target,phase,route,action,owner,introFraction,manualCamera,pinned:pinned.matches})};
+  renderLoop();
+  readScroll();
+  window.JevDuoScene = {ready, mountResult, get viewer(){return viewer;}, state:() => ({route, mode, action, blocked, playing, owner, introFraction, manualCamera})};
 })();
