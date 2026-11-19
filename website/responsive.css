@@ -9,13 +9,14 @@
 .hero{min-height:800px}
 .hero-copy{padding-top:119px}
 .hero-copy h1{font-size:96px}
-.architecture-board{padding-inline:28px}
-.arch-topline,.arch-lanes{gap:25px}
+.architecture-board{padding-inline:42px;column-gap:52px}
 .arch-node strong{font-size:18px}
-.arch-node p,.arch-node>span:not(.node-icon){font-size:14px}
-.arch-lanes,.arch-runtime,.arch-evidence{margin-left:calc((100% + 25px)/4)}
-.boundary-label{margin-left:calc((100% + 25px)/4)}
-.inner-loop-label{left:35px}
+.arch-node p,.lane-copy>span{font-size:14px}
+.arch-lane{padding:16px;gap:10px}
+.lane-loop{display:none}
+.routing-core{padding-inline:16px}
+.router-selection{flex-direction:column;gap:2px}
+.router-capabilities{gap:5px}
 .arch-runtime{gap:12px;padding:16px}
 .arch-runtime strong{font-size:16px}
 .arch-runtime>div{gap:9px}
@@ -53,26 +54,28 @@
 .architecture-heading{gap:15px}
 .architecture-heading h2{font-size:clamp(35px,4.6vw,47px)}
 #architecture-model-slot{width:35%;height:225px}
-.architecture-board{padding:30px 26px}
-.outer-loop-label{position:static;display:block;padding:0 0 27px;font-size:15px;background:none;text-align:center}
-.arch-topline{grid-template-columns:1fr 1fr;gap:26px}
-.arch-node{min-height:132px}
+.architecture-board{grid-template-columns:1fr 1fr;gap:26px 40px;padding:32px 26px}
+.arch-planning{grid-column:1/-1;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:132px;gap:22px}
 .arch-node strong{font-size:19px}
-.arch-node p,.arch-node>span:not(.node-icon){font-size:15px}
-.arch-lanes{margin:26px 0 0;gap:18px}
-.arch-lane{min-height:145px;padding:18px 9px}
-.arch-lane strong{font-size:17px}
-.arch-runtime{margin:28px 0 0}
+.arch-node p,.lane-copy>span{font-size:15px}
+.arch-input,.arch-goal{display:flex;text-align:center;padding:14px 9px}
+.arch-input .node-icon,.arch-goal .node-icon{align-self:center}
+.arch-planning>.arch-node:not(:last-child):after{content:"→";position:absolute;left:100%;top:45%;width:24px;color:#a99bb6;font-size:18px}
+.routing-core{min-height:354px}
+.routing-core:after{content:"→";position:absolute;left:100%;top:48%;width:40px;color:#a99bb6;font-size:19px;text-align:center}
+.router-selection{flex-direction:row}
+.arch-lanes{gap:16px}
+.arch-lane{min-height:104px;padding:18px 16px}
+.arch-lane strong{font-size:18px}
+.arch-runtime{grid-column:1/-1}
 .arch-runtime strong{font-size:18px}
-.arch-evidence{margin:0;min-height:78px}
+.arch-evidence{grid-column:1/-1;min-height:78px}
 .arch-evidence>strong{font-size:17px}
 .arch-evidence>span{font-size:15px}
-.boundary-label{margin:20px 0;font-size:15px}
-.inner-loop-label{position:static;flex-direction:row;align-items:center;justify-content:center;gap:12px;margin-top:28px}
-.inner-loop-label strong{font-size:17px}
-.inner-loop-label>span:last-child{font-size:15px;line-height:1.6}
-.loop-ring{width:34px;height:34px}
-.loop-ring svg{width:21px;height:21px}
+.boundary-label{grid-column:1/-1;font-size:15px}
+.arch-return-label{grid-column:1/-1;grid-row:auto;flex-direction:row;justify-content:center;gap:12px}
+.arch-return-label>strong{font-size:17px}
+.arch-return-label>span{font-size:15px}
 .architecture-wires{display:none}
 .execution-theater{grid-template-columns:27% 73%}
 .execution-plan{padding:25px 20px}
@@ -130,30 +133,28 @@ h2{font-size:37px;letter-spacing:-.045em;line-height:1.3}
 .architecture-heading{gap:0;margin-bottom:20px}
 .architecture-heading h2{font-size:37px}
 #architecture-model-slot{width:100%;height:210px}
-.architecture-board{border-radius:21px;padding:25px 15px}
-.outer-loop-label{font-size:14px;padding-bottom:25px}
-.arch-topline{grid-template-columns:1fr;gap:26px}
-.arch-topline .arch-node{min-height:112px;padding:18px 15px;display:grid;grid-template-columns:44px auto;gap:3px 14px;text-align:left;justify-content:start}
-.arch-topline .arch-node .node-icon{grid-row:1/3;width:39px;height:39px;align-self:center}
-.arch-topline .arch-node>strong{font-size:19px;align-self:end}
-.arch-topline .arch-node>p{font-size:15px;align-self:start}
-.arch-topline .arch-node:not(:last-child):after{content:"↓";position:absolute;left:50%;bottom:-25px;color:#b1a6b7;font-size:18px;line-height:23px}
-.inner-loop-label{gap:8px;margin-top:27px}
-.inner-loop-label strong{font-size:16px}
-.inner-loop-label>span:last-child{font-size:14px}
-.arch-lanes{gap:8px;margin-top:22px}
-.arch-lane{min-height:151px;padding:15px 6px;justify-content:flex-start}
-.arch-lane strong{font-size:15px;line-height:1.6}
-.arch-lane>span:not(.node-icon){font-size:14px;line-height:1.7}
-.arch-lane .node-icon{width:32px;height:32px;margin-bottom:3px}
-.arch-lane .node-icon svg{width:23px;height:23px}
-.arch-runtime{padding:15px 10px;gap:7px;margin-top:24px}
+.architecture-board{grid-template-columns:1fr;border-radius:21px;padding:25px 18px;gap:24px}
+.arch-planning{grid-template-columns:1fr;grid-template-rows:88px 132px 104px;gap:22px}
+.arch-input,.arch-goal{display:grid;grid-template-columns:39px 1fr;padding:18px;text-align:left;gap:3px 14px}
+.arch-planning>.arch-node:not(:last-child):after{content:"↓";left:50%;top:auto;bottom:-25px;width:auto;line-height:23px}
+.routing-core{grid-column:1;min-height:326px;margin-top:12px}
+.routing-core:after{content:"↓";left:50%;top:auto;bottom:-29px;width:auto}
+.routing-core .router-selection{max-width:215px;width:100%;align-self:center}
+.arch-lanes{grid-column:1;grid-template-rows:repeat(3,100px);gap:14px}
+.arch-lane{min-height:100px;padding:19px;gap:17px}
+.arch-lane strong{font-size:19px}
+.arch-lane .node-icon{width:36px;height:36px}
+.arch-lane .node-icon svg{width:25px;height:25px}
+.arch-return-label{flex-wrap:wrap;gap:7px 12px}
+.arch-return-label>svg{width:23px;height:23px}
+.arch-return-label>span{font-size:14px}
+.arch-runtime{padding:15px 10px;gap:7px}
 .arch-runtime>div{flex-direction:column;gap:7px}
 .arch-runtime strong{font-size:15px}
 .arch-runtime>div>svg{width:23px;height:23px}
-.runtime-exchange{gap:5px;font-size:12px}
+.runtime-exchange{gap:5px;font-size:14px}
 .runtime-exchange>svg{width:17px;height:17px}
-.boundary-label{font-size:13px;margin:19px 0}
+.boundary-label{font-size:14px}
 .arch-evidence{padding:15px 10px;gap:6px 9px}
 .arch-evidence>strong{font-size:16px}
 .arch-evidence>svg{width:21px;height:21px}
@@ -181,9 +182,11 @@ h2{font-size:37px;letter-spacing:-.045em;line-height:1.3}
 .work-heading>button{width:36px;height:36px}
 .work-heading .bolt-orb{width:39px;height:42px;border-radius:13px}
 .work-heading .bolt-orb>svg{width:24px;height:24px}
-.decision-panel{min-height:221px}
-.decision-heading{font-size:14px}
-.choice-row{font-size:15px;min-height:50px;padding:11px 12px}
+.decision-panel{min-height:300px}
+.decision-heading{font-size:16px;gap:6px}
+.distribution-label{font-size:14px}
+.choice-row{font-size:15px;min-height:75px;padding:12px}
+.selection-result>strong{font-size:17px}
 .local-receipt{font-size:14px;align-items:flex-start}
 .receipt-icon{margin-top:2px}
 .execution-bottom{padding:18px 20px;flex-wrap:wrap;gap:19px}

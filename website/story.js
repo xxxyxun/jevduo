@@ -8,11 +8,11 @@
   const opening = $("opening"), stage = document.querySelector(".assembly-stage");
   const slot = $("architecture-model-slot"), board = $("architecture-board"), theater = $("execution-theater");
   const actions = [
-    {label:"聚焦", observation:"搜索框已出现在当前观察中", choices:["点击零件搜索框","展开其他分类","返回慢模型"], receipt:"读回焦点：搜索框已激活"},
-    {label:"输入", observation:"搜索框已激活，零件编号已由慢模型提供", choices:["输入 64179","修改工程名称","重新打开零件库"], receipt:"读回字段：输入值为 64179"},
-    {label:"选择", observation:"搜索结果已更新，目标框架可见", choices:["选中目标框架","选择普通砖块","再次输入编号"], receipt:"读回选中状态：目标框架已选中"},
-    {label:"放置", observation:"目标框架已选中，可以放入当前工程", choices:["放到指定装配位置","切回搜索框","重复选中框架"], receipt:"动作回执：框架已放入装配区"},
-    {label:"保存", observation:"本段装配已完成，等待保存", choices:["保存当前工程","关闭未保存工程","重复放置框架"], receipt:"保存回执与最新观察已返回"},
+    {label:"聚焦", observation:"搜索框已出现在当前观察中", choices:["展开其他分类","点击零件搜索框","返回慢模型"], weights:[.11,.82,.07], receipt:"读回焦点：搜索框已激活"},
+    {label:"输入", observation:"搜索框已激活，零件编号已由慢模型提供", choices:["修改工程名称","重新打开零件库","输入 64179"], weights:[.05,.07,.88], receipt:"读回字段：输入值为 64179"},
+    {label:"选择", observation:"搜索结果已更新，目标框架可见", choices:["选中目标框架","再次输入编号","选择普通砖块"], weights:[.79,.13,.08], receipt:"读回选中状态：目标框架已选中"},
+    {label:"放置", observation:"目标框架已选中，可以放入当前工程", choices:["切回搜索框","放到指定装配位置","重复选中框架"], weights:[.09,.84,.07], receipt:"动作回执：框架已放入装配区"},
+    {label:"保存", observation:"本段装配已完成，等待保存", choices:["关闭未保存工程","重复放置框架","保存当前工程"], weights:[.04,.06,.90], receipt:"保存回执与最新观察已返回"},
   ];
   let viewer = null, owner = "hero", heroVisible = true, introAge = 0, introFraction = reduced ? 1 : 0;
   let manualCamera = false, introFrame = 0, lastIntro = 0, route = "gui", bridgeProgress = 0;
@@ -30,28 +30,28 @@
       const rect = $(id).getBoundingClientRect();
       return {x:rect.x-root.x, y:rect.y-root.y, w:rect.width, h:rect.height};
     };
-    const top = ["arch-input", "arch-slow", "arch-goal", "arch-router"].map(bounds);
+    const source = ["arch-input", "arch-slow", "arch-goal"].map(bounds), router = bounds("arch-router");
     const lanes = ["arch-jev", "arch-cli", "arch-extension"].map(bounds);
     const runtime = bounds("arch-runtime"), evidence = bounds("arch-evidence");
     const cx = node => node.x + node.w/2, cy = node => node.y + node.h/2;
     const bottom = node => node.y + node.h;
     const paths = [];
-    for (let i = 0; i < top.length-1; i++) {
-      paths.push(line("M" + (top[i].x+top[i].w+3) + " " + cy(top[i]) + "H" + (top[i+1].x-6)));
+    for (let i = 0; i < source.length-1; i++) {
+      paths.push(line("M" + cx(source[i]) + " " + (bottom(source[i])+3) + "V" + (source[i+1].y-6)));
     }
-    const router = top[3], bus = (bottom(router)+lanes[0].y)/2;
-    lanes.forEach((lane, i) => {
-      const active = ["gui","cli","extension"][i] === route;
-      paths.push(line("M" + cx(router) + " " + (bottom(router)+3) + "V" + bus + "H" + cx(lane) + "V" + (lane.y-7), active ? "active" : ""));
-      paths.push(line("M" + cx(lane) + " " + (bottom(lane)+3) + "V" + (runtime.y-7), active ? "active" : ""));
-    });
-    const localX = runtime.x-28, localY = cy(runtime), jevY = cy(lanes[0]);
+    const goal = source[2], inputX = router.x-25, bus = lanes[0].x-26;
+    paths.push(line("M" + (goal.x+goal.w+3) + " " + cy(goal) + "H" + inputX + "V" + cy(router) + "H" + (router.x-7)));
+    const selected = lanes[["gui","cli","extension"].indexOf(route)];
+    const branch = lane => "M" + (router.x+router.w+3) + " " + cy(router) + "H" + bus + "V" + cy(lane) + "H" + (lane.x-7);
+    lanes.filter(lane => lane !== selected).forEach(lane => paths.push(line(branch(lane))));
+    paths.push(line(branch(selected), "active"));
+    paths.push(line("M" + (selected.x+selected.w+3) + " " + (cy(selected)-9) + "H" + (root.width-27) + "V" + (cy(runtime)-12) + "H" + (runtime.x+runtime.w+7), "active"));
     if (route === "gui") {
-      paths.push(line("M" + (runtime.x-4) + " " + localY + "H" + (localX+9) + "Q" + localX + " " + localY + " " + localX + " " + (localY-9) + "V" + (jevY+9) + "Q" + localX + " " + jevY + " " + (localX+9) + " " + jevY + "H" + (lanes[0].x-7), "local"));
+      const outside = root.width-10, lane = lanes[0];
+      paths.push(line("M" + (runtime.x+runtime.w+3) + " " + (cy(runtime)+12) + "H" + outside + "V" + (cy(lane)+12) + "H" + (lane.x+lane.w+7), "local"));
     }
     paths.push(line("M" + cx(runtime) + " " + (bottom(runtime)+3) + "V" + (evidence.y-7)));
-    const outerX = root.width-18, slowX = cx(top[1]), outerY = 30;
-    paths.push(line("M" + (evidence.x+evidence.w+3) + " " + cy(evidence) + "H" + (outerX-10) + "Q" + outerX + " " + cy(evidence) + " " + outerX + " " + (cy(evidence)-10) + "V" + (outerY+10) + "Q" + outerX + " " + outerY + " " + (outerX-10) + " " + outerY + "H" + (slowX+10) + "Q" + slowX + " " + outerY + " " + slowX + " " + (outerY+10) + "V" + (top[1].y-7), "return"));
+    paths.push(line("M" + (evidence.x-3) + " " + cy(evidence) + "H22V" + cy(source[1]) + "H" + (source[1].x-7), "return"));
     $("arch-wires").innerHTML = paths.join("");
   }
 
@@ -59,7 +59,8 @@
     route = button.dataset.route;
     board.dataset.route = route;
     board.querySelectorAll("[data-route]").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
-    board.querySelector(".inner-loop-label").style.opacity = route === "gui" ? 1 : .3;
+    $("router-selection").textContent = button.querySelector("strong").textContent;
+    board.querySelectorAll("[data-lane]").forEach(item => item.classList.toggle("active", item.dataset.lane === route));
     drawArchitecture();
   }));
   new ResizeObserver(drawArchitecture).observe(board);
@@ -75,10 +76,18 @@
     $("plan-state").textContent = blocked ? "处理当前缺失的信息" : phase === "review" ? "核验后决定下一步" : "等待本段执行结果";
     $("work-title").textContent = blocked ? "停止局部循环" : phase === "goal" ? "接收子目标与输入" : phase === "review" ? "本段执行已结束" : "JEV 选择下一动作";
     $("observation-text").textContent = blocked ? "目标控件未出现在当前候选中" : phase === "goal" ? "目标、输入与返回条件已明确" : phase === "review" ? "将执行结果与最新观察交给慢模型" : item.observation;
-    $("decision-title").textContent = blocked ? "返回慢模型处理阻塞" : "当前观察下的动作候选";
+    $("decision-title").textContent = blocked ? "JEV 选择返回" : "JEV 候选选择";
     $("receipt-text").textContent = blocked ? "保留当前状态，返回缺失控件与最后观察" : phase === "goal" ? "收到子目标后，开始本段 GUI 操作" : item.receipt;
     const choices = blocked ? ["返回慢模型补充观察","重复点击上次位置","未确认就重放动作"] : item.choices;
-    $("local-choice").innerHTML = choices.map((text, i) => '<div class="choice-row ' + (i === 0 ? "selected" : "") + '"><span>0' + (i+1) + '</span>' + text + (i === 0 ? icon("check") : "") + '</div>').join("");
+    const weights = blocked ? [.94,.04,.02] : item.weights;
+    const winner = weights.indexOf(Math.max(...weights)), decided = phase !== "goal";
+    $("local-choice").innerHTML = choices.map((text, i) => {
+      const percent = decided ? Math.round(weights[i]*100) : 0;
+      return '<div class="choice-row ' + (decided && i === winner ? "selected" : "") + '" data-weight="' + percent + '"><span class="choice-label">' + text + '</span><strong class="choice-value">' + (decided ? percent+"%" : "—") + '</strong><span class="choice-track" aria-hidden="true"><i class="choice-bar" style="--score:' + percent + '%"></i></span></div>';
+    }).join("");
+    $("selection-caption").textContent = decided ? "JEV 已选" : "等待观察";
+    $("selected-action").textContent = decided ? choices[winner] : "接收子目标与输入";
+    document.querySelector(".selection-result>svg").style.visibility = decided ? "visible" : "hidden";
     $("action-beads").innerHTML = actions.map((entry, i) => {
       const state = phase === "review" && !blocked || i < action ? "done" : i === action && phase === "execution" ? "active" : "";
       return '<button class="action-bead ' + state + '" data-action="' + i + '" aria-pressed="' + (i === action) + '">' + entry.label + '</button>';
@@ -222,8 +231,11 @@
     const crop = Math.max(0, (1-target.height/(stage.offsetHeight*scale))*50);
     const x = target.left-root.left+target.width/2-stage.offsetLeft-stage.offsetWidth/2;
     const y = targetY-stage.offsetTop-stage.offsetHeight/2;
+    const height = stage.offsetHeight*(1+(scale-1)*progress);
+    const bottom = root.top+stage.offsetTop+stage.offsetHeight/2+y*progress+height/2;
+    const clipBottom = Math.max(crop*progress, 100*clamp((bottom-board.getBoundingClientRect().top+20)/height));
     stage.style.transform = "translate(" + (x*progress) + "px," + (y*progress) + "px) scale(" + (1+(scale-1)*progress) + ")";
-    stage.style.clipPath = "inset(" + (crop*progress) + "% 0)";
+    stage.style.clipPath = "inset(" + (crop*progress) + "% 0 " + clipBottom + "% 0)";
     if (bridgeProgress > introAge/7600) introAge = bridgeProgress*7600;
     if (viewer && owner === "hero" && introFraction < 1) scheduleIntro();
   }

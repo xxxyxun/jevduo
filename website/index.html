@@ -35,7 +35,7 @@
   <a class="skip-link" href="#architecture">跳到正文</a>
   <header class="header">
     <div class="header-inner shell">
-      <a href="#top" class="brand" aria-label="JevDuo 首页"><span class="brand-icon"><svg><use href="#i-bolt"/></svg></span>JevDuo<span class="brand-dot"></span></a>
+      <a href="#top" class="brand" aria-label="JevDuo 首页"><span class="brand-icon"><svg><use href="#i-bolt"/></svg></span>JevDuo</a>
       <nav aria-label="主导航"><a href="#architecture">工作原理</a><a href="#execution">执行流程</a><a href="#film">案例</a></nav>
       <a class="github-link" href="https://github.com/AI45Lab/JevDuo" target="_blank" rel="noopener"><svg><use href="#i-github"/></svg> GitHub <span>↗</span></a>
     </div>
@@ -45,29 +45,28 @@
       <div class="hero-light hero-light-cool"></div><div class="hero-light hero-light-warm"></div>
       <div class="assembly-stage"><div class="model-aura"></div><div id="hero-model-mount" aria-label="可旋转的装配模型"><img class="assembly-poster" src="assembly-poster.png" alt=""><span id="hero-model-loading" class="scene-loading" role="status" aria-label="加载场景"></span></div></div>
     <section class="hero" id="story" aria-labelledby="hero-title">
-      <div class="hero-copy"><h1 id="hero-title">JevDuo<span>.</span></h1></div>
+      <div class="hero-copy"><h1 id="hero-title">JevDuo</h1></div>
     </section>
 
     <section class="architecture-section section-pad" id="architecture" aria-labelledby="architecture-title">
       <div class="shell">
-        <div class="section-heading architecture-heading"><div><p class="eyebrow">JEV 驱动的计算机操作</p><h2 id="architecture-title">慢模型规划子目标。<br>JEV 连续选择动作。</h2></div><div id="architecture-model-slot" aria-hidden="true"></div></div>
+        <div class="section-heading architecture-heading"><div><p class="eyebrow">JEV 驱动的计算机操作</p><h2 id="architecture-title">子目标就绪。<br>Router 分派执行。</h2></div><div id="architecture-model-slot" aria-hidden="true"></div></div>
         <div class="architecture-board" id="architecture-board" data-route="gui">
-          <span class="outer-loop-label">子目标返回后，慢模型核验并决定下一步</span>
-          <div class="arch-topline">
+          <div class="arch-planning">
             <div class="arch-node arch-input" id="arch-input"><span class="node-icon"><svg><use href="#i-file"/></svg></span><strong>用户任务</strong><p>原始要求与最新观察</p></div>
             <div class="arch-node arch-slow" id="arch-slow"><span class="node-icon brain-orb"><svg><use href="#i-brain"/></svg></span><strong>慢模型</strong><p>确定下一子目标</p></div>
             <div class="arch-node arch-goal" id="arch-goal"><span class="node-icon"><svg><use href="#i-box"/></svg></span><strong>子目标</strong><p>目标 · 输入 · 停止条件</p></div>
-            <div class="arch-node arch-router" id="arch-router"><span class="node-icon"><svg><use href="#i-route"/></svg></span><strong>执行路由</strong><p>GUI · CLI · 扩展</p></div>
           </div>
-          <div class="inner-loop-label"><span class="loop-ring"><svg><use href="#i-refresh"/></svg></span><strong>JEV 局部循环</strong><span>更新观察 → 继续选择</span></div>
+          <div class="routing-core" id="arch-router"><span class="router-brand">JevDuo</span><span class="router-emblem"><svg><use href="#i-route"/></svg></span><strong>Router</strong><p>分派当前子目标</p><div class="router-selection"><span>当前路径</span><strong id="router-selection">JEV · GUI</strong></div><div class="router-capabilities" aria-label="支持的执行路径"><span data-lane="gui" class="active">GUI</span><span data-lane="cli">CLI</span><span data-lane="extension">扩展</span></div></div>
           <div class="arch-lanes" aria-label="选择执行路径">
-            <button class="arch-node arch-lane arch-jev" id="arch-jev" data-route="gui" aria-pressed="true"><span class="node-icon bolt-orb"><svg><use href="#i-bolt"/></svg></span><strong>JEV · GUI</strong><span>按新观察选择动作</span></button>
-            <button class="arch-node arch-lane" id="arch-cli" data-route="cli" aria-pressed="false"><span class="node-icon"><svg><use href="#i-terminal"/></svg></span><strong>慢模型 · CLI</strong><span>编写代码与命令</span></button>
-            <button class="arch-node arch-lane" id="arch-extension" data-route="extension" aria-pressed="false"><span class="node-icon"><svg><use href="#i-grid"/></svg></span><strong>执行器接口</strong><span>接入其他能力</span></button>
+            <button class="arch-node arch-lane arch-jev" id="arch-jev" data-route="gui" aria-pressed="true"><span class="node-icon bolt-orb"><svg><use href="#i-bolt"/></svg></span><span class="lane-copy"><strong>JEV · GUI</strong><span>观察 · 选择 · 执行</span></span><svg class="lane-loop"><use href="#i-refresh"/></svg></button>
+            <button class="arch-node arch-lane" id="arch-cli" data-route="cli" aria-pressed="false"><span class="node-icon"><svg><use href="#i-terminal"/></svg></span><span class="lane-copy"><strong>慢模型 · CLI</strong><span>代码与命令</span></span></button>
+            <button class="arch-node arch-lane" id="arch-extension" data-route="extension" aria-pressed="false"><span class="node-icon"><svg><use href="#i-grid"/></svg></span><span class="lane-copy"><strong>扩展执行器</strong><span>可替换的工具接口</span></span></button>
           </div>
           <div class="arch-runtime" id="arch-runtime"><div><svg><use href="#i-cursor"/></svg><strong>工具执行</strong></div><span class="runtime-exchange">动作 <svg><use href="#i-refresh"/></svg> 回执</span><div><svg><use href="#i-grid"/></svg><strong>桌面环境</strong></div></div>
-          <p class="boundary-label">完成、遇阻或预算到达时，返回本段结果</p>
-          <div class="arch-evidence" id="arch-evidence"><svg><use href="#i-check"/></svg><strong>执行结果与最新观察</strong><span>供慢模型核验与续接</span></div>
+          <p class="boundary-label">完成 · 遇阻 · 预算到达</p>
+          <div class="arch-evidence" id="arch-evidence"><svg><use href="#i-check"/></svg><strong>结果与最新观察</strong><span>返回慢模型核验</span></div>
+          <div class="arch-return-label"><svg><use href="#i-check"/></svg><strong>核验与续接</strong><span>继续子目标或结束</span></div>
           <svg class="architecture-wires" aria-hidden="true"><defs><marker id="arch-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto"><path d="m1 1 6 3-6 3Z" stroke="none"/></marker></defs><g id="arch-wires"></g></svg>
         </div>
       </div>
@@ -75,8 +74,8 @@
     </div>
 
     <section class="execution-section shell section-pad" id="execution" aria-labelledby="execution-title">
-      <div class="section-heading"><div><p class="eyebrow">为什么使用 JEV</p><h2 id="execution-title">一个子目标，<br>连续多步 GUI 操作。</h2></div></div>
-      <div class="execution-controls"><div class="execution-flow" aria-label="子目标执行流程"><span data-phase="goal"><svg><use href="#i-brain"/></svg> 规划子目标</span><svg class="flow-arrow"><use href="#i-arrow"/></svg><span data-phase="execution" class="active"><svg><use href="#i-bolt"/></svg> JEV 连续执行</span><svg class="flow-arrow"><use href="#i-arrow"/></svg><span data-phase="review"><svg><use href="#i-check"/></svg> 核验与续接</span></div><button class="text-link" id="loop-replay" aria-label="重播执行流程"><svg><use href="#i-refresh"/></svg> 重播</button></div>
+      <div class="section-heading"><div><p class="eyebrow">JEV 如何行动</p><h2 id="execution-title">一个子目标。<br>每一步，由 JEV 选择。</h2></div></div>
+      <div class="execution-controls"><div class="execution-flow" aria-label="子目标执行流程"><span data-phase="goal"><svg><use href="#i-brain"/></svg> 下发子目标</span><svg class="flow-arrow"><use href="#i-arrow"/></svg><span data-phase="execution" class="active"><svg><use href="#i-bolt"/></svg> JEV 候选选择</span><svg class="flow-arrow"><use href="#i-arrow"/></svg><span data-phase="review"><svg><use href="#i-check"/></svg> 结果核验</span></div><button class="text-link" id="loop-replay" aria-label="重播执行流程"><svg><use href="#i-refresh"/></svg> 重播</button></div>
       <div class="execution-theater" id="execution-theater" data-phase="execution" data-blocked="false">
         <aside class="execution-plan">
           <span class="plan-icon brain-orb"><svg><use href="#i-brain"/></svg></span>
@@ -88,7 +87,7 @@
           <div class="work-heading"><span class="bolt-orb" id="work-icon"><svg><use href="#i-bolt"/></svg></span><div><strong id="work-title">JEV 选择下一动作</strong><span id="observation-text">搜索框已出现在当前观察中</span></div><button id="loop-play" aria-label="播放执行流程"><svg><use href="#i-play"/></svg></button></div>
           <div class="local-workspace">
             <div class="mini-desktop"><div class="mini-titlebar"><span></span><span></span><span></span><strong>示意工作区</strong></div><div class="mini-app"><div class="mini-library"><div class="mini-search" id="mini-search"><svg><use href="#i-eye"/></svg><span id="mini-search-value">零件编号</span><i></i></div><div class="mini-parts" id="mini-parts"><div class="mini-part part-frame"></div><div class="mini-part part-brick"></div><div class="mini-part part-gear"></div></div><span class="library-label">搜索结果</span></div><div class="mini-canvas"><div class="canvas-grid"></div><div class="placed-part part-frame" id="placed-part"></div><span id="mini-canvas-status">当前工程</span><div class="saved-mark" id="saved-mark"><svg><use href="#i-check"/></svg> 保存完成</div></div></div></div>
-            <div class="decision-panel"><div class="decision-heading"><svg><use href="#i-cursor"/></svg><strong id="decision-title">当前观察下的动作候选</strong></div><div class="local-choice" id="local-choice"></div></div>
+            <div class="decision-panel"><div class="decision-heading"><svg><use href="#i-bolt"/></svg><strong id="decision-title">JEV 候选选择</strong><span class="distribution-label">示意分布</span></div><div class="local-choice" id="local-choice" aria-label="候选选择权重示意"></div><div class="selection-result"><span id="selection-caption">本次选择</span><strong id="selected-action">点击零件搜索框</strong><svg><use href="#i-check"/></svg></div></div>
           </div>
           <div class="local-receipt"><span class="receipt-icon"><svg><use href="#i-check"/></svg></span><span id="receipt-text">执行后确认搜索框焦点</span><span class="feedback-badge">执行反馈</span></div>
         </div>
@@ -118,6 +117,6 @@
 
     <section class="closing shell section-pad"><span class="closing-mark"><svg><use href="#i-bolt"/></svg></span><p class="eyebrow">开发与使用</p><h2>把 JevDuo 接入你的任务。</h2><p>替换规划模型、动作选择器或执行工具，复用编排与测评流程。</p><div class="closing-actions"><a class="button primary" href="https://github.com/AI45Lab/JevDuo" target="_blank" rel="noopener"><svg><use href="#i-github"/></svg> 查看代码 <span>↗</span></a><a class="button secondary" href="https://github.com/AI45Lab/JevDuo/blob/dev/docs/ORCHESTRATION.md" target="_blank" rel="noopener">开发文档 <svg><use href="#i-arrow"/></svg></a></div></section>
   </main>
-  <footer class="footer shell"><div class="footer-top"><a class="brand" href="#top">JevDuo<span class="brand-dot"></span></a><span>JEV-powered computer use</span><a href="#top">返回顶部 ↑</a></div><details><summary>演示与素材来源 <span>＋</span></summary><div class="source-copy"><p>架构依据 JevDuo 的慢模型编排、子目标契约、执行器注册和共享 runtime。局部执行流程是前端机制演示，不调用真实模型，不构成时间、token 或准确率的实测对比。</p><p>影片和桌面回放复用历史 NorthCUA / BrickLink Studio 记录。影片中的 JEV 环节用于说明机制，不代表 JEV 已完成该装配任务。模块录像按装配进度对齐，不代表同一时刻，也不表示框架默认自动四并发。</p><p>页面模型重建自已有装配成果，运动采用已有 MuJoCo 理想约束记录。它不替代全零件接触、干涉检测或实物验证。Three.js 使用 MIT 许可证。</p></div></details><div class="footer-bottom"><span>© JevDuo · 开源计算机操作框架</span><a href="../../THREE-LICENSE.txt">Three.js 许可证 ↗</a></div></footer>
+  <footer class="footer shell"><div class="footer-top"><a class="brand" href="#top">JevDuo</a><span>JEV-powered computer use</span><a href="#top">返回顶部 ↑</a></div><details><summary>演示与素材来源 <span>＋</span></summary><div class="source-copy"><p>架构依据 JevDuo 的慢模型编排、子目标契约、执行器注册和共享 runtime。局部执行流程及百分比分布为前端示意，不调用真实模型；分布不是实测或校准后的置信度，也不构成时间、token 或准确率的实测对比。</p><p>影片和桌面回放复用历史 NorthCUA / BrickLink Studio 记录。影片中的 JEV 环节用于说明机制，不代表 JEV 已完成该装配任务。模块录像按装配进度对齐，不代表同一时刻，也不表示框架默认自动四并发。</p><p>页面模型重建自已有装配成果，运动采用已有 MuJoCo 理想约束记录。它不替代全零件接触、干涉检测或实物验证。Three.js 使用 MIT 许可证。</p></div></details><div class="footer-bottom"><span>© JevDuo · 开源计算机操作框架</span><a href="../../THREE-LICENSE.txt">Three.js 许可证 ↗</a></div></footer>
 </body>
 </html>
