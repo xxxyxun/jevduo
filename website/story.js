@@ -14,7 +14,7 @@
   const wireSvg = document.querySelector('.arch-track');
   const wireLayer = $('arch-wires');
   const pulseLayer = $('arch-pulses');
-  const gates = [$('arch-jev'), $('arch-cli'), $('arch-extension')];
+  const gates = [$('arch-jev'), $('arch-cli')];
   const stops = [...$('arch-runtime').querySelectorAll('.runtime-node')];
   /* 三维装配：一个 viewer 在开场与结果之间迁移 */
   let viewer = null;
@@ -118,9 +118,8 @@
   }).observe(opening);
   /* 架构：量测真实 rect 的轨道，一次只走一条路 */
   const labelsLayer = $('arch-labels');
-  const ROUTES = ['gui', 'cli', 'extension'];
-  const DUR = { routing: 1100, executing: 2200, returning: 1400, idle: 2800 };
-  const FLOW = { routing: [['goal', 0, 0.6], ['dispatch', 0.38, 1]], executing: [['run', 0, 1]], returning: [['back', 0, 0.42], ['loop', 0.46, 1]] };
+  const DUR = { routing: 1800, executing: 1800, returning: 1600, idle: 1200 };
+  const FLOW = { routing: [['step1', 0, .25], ['goal', .28, .6], ['dispatch', .6, 1]], executing: [['run', 0, 1]], returning: [['back', 0, .42], ['loop', .46, 1]] };
   let route = 'gui';
   let boardPhase = 'idle';
   let boardInView = false;
@@ -137,7 +136,7 @@
     const y = r.top - frameRect.top;
     return { x, y, right: x + r.width, bottom: y + r.height, cx: x + r.width / 2, cy: y + r.height / 2 };
   };
-  const dots = [0, 1].map(() => {
+  const dots = [0, 1, 2].map(() => {
     const dot = pulseLayer.appendChild(document.createElementNS(NS, 'circle'));
     dot.setAttribute('r', '3');
     dot.style.opacity = '0';
@@ -145,11 +144,11 @@
   });
   function dress() {
     const live = boardPhase === 'routing' || boardPhase === 'executing';
-    ['goal', 'dispatch', 'run'].forEach((key) => { if (wireMap[key]) wireMap[key].classList.toggle('is-active', live); });
+    ['step1', 'goal', 'dispatch', 'run'].forEach((key) => { if (wireMap[key]) wireMap[key].classList.toggle('is-active', live); });
     ['back', 'loop'].forEach((key) => { if (wireMap[key]) wireMap[key].classList.toggle('is-return', boardPhase === 'returning'); });
   }
   function drawBoard() {
-    if (innerWidth < 960 || board.clientWidth < 620) {
+    if (innerWidth <= 960 || board.clientWidth < 620) {
       wireSvg.style.display = 'none';
       wireLayer.innerHTML = '';
       labelsLayer.innerHTML = '';
@@ -161,30 +160,25 @@
     if (frameRect.width < 60) return;
     wireSvg.setAttribute('viewBox', `0 0 ${frameRect.width} ${frameRect.height}`);
     const input = box($('arch-input'));
-    const observe = box($('arch-observe'));
     const slow = box($('arch-slow'));
-    const end = box($('arch-end'));
-    const score = box($('arch-score'));
     const router = box($('arch-router'));
+    const zone = box(board.querySelector('.route-zone'));
     const runtime = box($('arch-runtime'));
     const back = box($('arch-return'));
     const pool = [...board.querySelectorAll('.pool .gate')].map((node) => Object.assign({ key: node.dataset.route }, box(node)));
-    const busRoute = n1(router.bottom + (pool[0].y - router.bottom) * 0.56);
-    const busRun = n1(pool[0].bottom + (runtime.y - pool[0].bottom) * 0.5);
-    const top = 18;
+    const busRoute = n1(zone.right - 12);
+    const busRun = n1((runtime.right + zone.x) / 2);
+    const goalBend = n1((slow.right + router.x) / 2);
     const paths = {
-      step1: `M${n1(input.right)} ${n1(input.cy)}H${n1(observe.x)}`,
-      step2: `M${n1(observe.right)} ${n1(observe.cy)}H${n1(slow.x)}`,
-      stop: `M${n1(slow.right)} ${n1(slow.cy)}H${n1(end.x)}`,
-      score: `M${n1(end.cx)} ${n1(end.bottom)}V${n1(score.y)}`,
-      goal: `M${n1(slow.cx)} ${n1(slow.bottom)}V${n1(router.y)}`,
+      step1: `M${n1(input.right)} ${n1(input.cy)}H${n1(slow.x)}`,
+      goal: `M${n1(slow.right)} ${n1(slow.cy)}H${goalBend}V${n1(router.cy)}H${n1(router.x)}`,
       back: `M${n1(runtime.x)} ${n1(runtime.cy)}H${n1(back.right)}`,
-      loop: `M${n1(back.x)} ${n1(back.cy)}H26Q16 ${n1(back.cy)} 16 ${n1(back.cy - 14)}V${n1(top + 14)}Q16 ${n1(top)} 26 ${n1(top)}H${n1(observe.cx)}V${n1(observe.y)}`,
+      loop: `M${n1(back.cx)} ${n1(back.y)}V${n1(input.bottom)}`,
     };
-    const parts = Object.keys(paths).map((key) => `<path id='w-${key}' d='${paths[key]}'${key === 'score' ? " class='is-note'" : ''}/>`);
+    const parts = Object.keys(paths).map((key) => `<path id='w-${key}' d='${paths[key]}'${key === 'loop' ? " class='is-loop'" : ''}/>`);
     pool.forEach((gate) => {
-      parts.push(`<path id='w-dispatch-${gate.key}' class='is-lane' data-kind='${gate.key}' d='M${n1(router.cx)} ${n1(router.bottom)}V${busRoute}H${n1(gate.cx)}V${n1(gate.y)}'/>`);
-      parts.push(`<path id='w-run-${gate.key}' class='is-lane' data-kind='${gate.key}' d='M${n1(gate.cx)} ${n1(gate.bottom)}V${busRun}H${n1(runtime.cx)}V${n1(runtime.y)}'/>`);
+      parts.push(`<path id='w-dispatch-${gate.key}' class='is-lane' data-kind='${gate.key}' d='M${n1(router.cx)} ${n1(router.bottom)}V${n1(router.bottom + 17)}H${busRoute}V${n1(gate.cy)}H${n1(gate.right)}'/>`);
+      parts.push(`<path id='w-run-${gate.key}' class='is-lane' data-kind='${gate.key}' d='M${n1(gate.x)} ${n1(gate.cy)}H${busRun}V${n1(runtime.cy)}H${n1(runtime.right)}'/>`);
     });
     wireLayer.innerHTML = parts.join('');
     wireMap = {};
@@ -192,10 +186,9 @@
     wireMap.dispatch = wireMap[`dispatch-${route}`];
     wireMap.run = wireMap[`run-${route}`];
     const mark = (x, y, text, mid) => `<text x='${n1(x)}' y='${n1(y)}'${mid ? " text-anchor='middle'" : ''}>${text}</text>`;
-    labelsLayer.innerHTML = mark((slow.right + end.x) / 2, slow.cy - 12, '成功 / 失败', 1)
-      + mark(slow.cx + 14, (slow.bottom + router.y) / 2 + 5, '继续 · 一个子目标')
-      + mark(end.cx + 14, (end.bottom + score.y) / 2 + 5, '评测旁路')
-      + mark(34, 13, '下一轮');
+    labelsLayer.innerHTML = mark(goalBend, Math.min(slow.cy, router.cy) - 15, '子目标', 1)
+      + mark((runtime.x + back.right) / 2, back.cy - 15, '回执', 1)
+      + mark(back.cx + 12, (back.y + input.bottom) / 2 + 5, '新观察');
     dress();
   }
   function setPhase(name) {
@@ -257,7 +250,7 @@
     cycle();
   }));
   new IntersectionObserver((entries) => {
-    boardInView = entries[0].isIntersecting;
+    boardInView = entries[entries.length - 1].isIntersecting;
     if (!boardInView) { setPhase('idle'); return; }
     drawBoard();
     cycle();

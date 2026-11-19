@@ -121,76 +121,59 @@
       <header class='section-lead arch-lead'>
         <p class='eyebrow'>工作方式</p>
         <h2 id='architecture-title'>慢模型定子目标，<br>Router 决定谁执行。</h2>
-        <p class='lead'>一次只走一条路。子目标、执行回执与最新观察，都回到同一个 runtime。</p>
+        <p class='lead'>从当前观察出发，分派执行，再带着结果回到下一轮。</p>
       </header>
       <div class='architecture-board' id='architecture-board' data-route='gui' data-phase='idle'>
-        <div class='board-light' aria-hidden='true'></div>
-        <div class='arch-duo'>
-          <p class='duo-label'><span>系统二 · 慢决策</span><em>继续时只下发一个子目标</em></p>
-          <div class='duo-row'>
-            <div class='node' id='arch-input'>
-              <span class='node-orb' aria-hidden='true'><svg class='ico'><use href='#i-file'/></svg></span>
-              <span class='node-copy'><strong>用户任务</strong><span>原始要求</span></span>
-            </div>
-            <div class='node' id='arch-observe'>
-              <span class='node-orb' aria-hidden='true'><svg class='ico'><use href='#i-eye'/></svg></span>
-              <span class='node-copy'><strong>当前观察</strong><span>桌面状态与可用控件</span></span>
-            </div>
-            <div class='node node-slow' id='arch-slow'>
-              <p class='slow-kicker'><i class='pulse-dot' aria-hidden='true'></i>慢模型</p>
-              <p class='slow-title'>评估进展 · 决策</p>
-              <span class='slow-note'>核验结果，继续、调整或结束</span>
-            </div>
-            <div class='node' id='arch-end'>
-              <span class='node-orb' aria-hidden='true'><svg class='ico'><use href='#i-check'/></svg></span>
-              <span class='node-copy'><strong>成功 / 失败</strong><span>结束本次任务执行</span></span>
-            </div>
-            <div class='node' id='arch-score'>
-              <strong>OSWorld 官方评分</strong>
-              <span>外部评测旁路 · 不进入模型输入</span>
-            </div>
+        <p class='board-caption'>JevDuo <span>执行闭环</span></p>
+        <div class='node' id='arch-input'>
+          <span class='node-orb' aria-hidden='true'><svg class='ico'><use href='#i-file'/></svg></span>
+          <p class='node-kicker'>任务入口</p>
+          <h3>任务与当前观察</h3>
+          <p class='node-note'>用户要求、桌面状态与可用控件。</p>
+        </div>
+        <div class='node node-slow' id='arch-slow'>
+          <span class='node-orb' aria-hidden='true'><svg class='ico'><use href='#i-brain'/></svg></span>
+          <p class='node-kicker'>系统二 · 慢模型</p>
+          <h3>评估进展，<br>给出子目标。</h3>
+          <p class='node-note'>提供必需输入，核验回传结果。</p>
+          <div class='slow-outcomes'><span>继续执行</span><span>完成或终止</span></div>
+        </div>
+        <div class='route-zone'>
+          <p class='route-badge'>系统一 · 快速路由</p>
+          <div class='router' id='arch-router'>
+            <span class='node-orb router-symbol' aria-hidden='true'><svg class='ico' viewBox='0 0 24 24'><g fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M4 12h7m0 0 5-6h4m-9 6 5 6h4'/><circle cx='4' cy='12' r='2'/><path d='M18 4l2 2-2 2m0 8 2 2-2 2'/></g></svg></span>
+            <p class='node-kicker'>Router</p>
+            <h3>选一条执行路径。</h3>
+            <p class='node-note' id='arch-goal'>根据当前子目标分派执行器。</p>
+            <p class='router-exit'><span>当前路线</span><strong id='router-selection'>JEV · GUI</strong></p>
+          </div>
+          <div class='pool' aria-label='选择要查看的执行路线'>
+            <button class='gate' id='arch-jev' data-route='gui' aria-pressed='true'>
+              <span class='gate-mark' aria-hidden='true'><svg class='ico'><use href='#i-cursor'/></svg></span>
+              <span class='gate-copy'><strong>JEV · GUI</strong><span>观察界面，连续选择动作</span></span>
+              <span class='gate-port' aria-hidden='true'></span>
+            </button>
+            <button class='gate' id='arch-cli' data-route='cli' aria-pressed='false'>
+              <span class='gate-mark' aria-hidden='true'><svg class='ico'><use href='#i-terminal'/></svg></span>
+              <span class='gate-copy'><strong>慢模型 · CLI</strong><span>编写并执行代码与命令</span></span>
+              <span class='gate-port' aria-hidden='true'></span>
+            </button>
           </div>
         </div>
-        <div class='router' id='arch-router'>
-          <span class='router-halo' aria-hidden='true'></span>
-          <div class='router-core'>
-            <span class='router-name'>继续 · ROUTER · 系统一</span>
-            <p class='router-job'>按当前子目标选择一条执行器路径</p>
-            <span class='router-capsule' id='arch-goal'><em>当前子目标</em><b>装好支架模块，保存当前工程</b></span>
-            <span class='router-exit'><em>当前出口</em><strong id='router-selection'>JEV · GUI</strong></span>
+        <div class='runtime' id='arch-runtime'>
+          <p class='node-kicker'>共享 Runtime</p>
+          <h3>让动作落到真实环境。</h3>
+          <div class='runtime-pair'>
+            <span class='runtime-node'><strong>Tool Executor</strong><em>动作下发</em></span>
+            <span class='runtime-bridge' aria-label='动作与回执双向传递'>↔</span>
+            <span class='runtime-node'><strong>Environment</strong><em>桌面与工具</em></span>
           </div>
         </div>
-        <div class='pool' aria-label='执行器池'>
-          <button class='gate' id='arch-jev' data-route='gui' aria-pressed='true'>
-            <span class='gate-mark' aria-hidden='true'><svg class='ico'><use href='#i-cursor'/></svg></span>
-            <span class='gate-copy'><strong>JEV · GUI</strong><span>在子目标内连续选择动作</span></span>
-          </button>
-          <button class='gate' id='arch-cli' data-route='cli' aria-pressed='false'>
-            <span class='gate-mark' aria-hidden='true'><svg class='ico'><use href='#i-terminal'/></svg></span>
-            <span class='gate-copy'><strong>慢模型 · CLI</strong><span>给出脚本与命令</span></span>
-          </button>
-          <p class='gate is-extension' data-route='play'>
-            <span class='gate-mark' aria-hidden='true'><svg class='ico'><use href='#i-play'/></svg></span>
-            <span class='gate-copy'><strong>Play</strong><span>扩展接口 · 尚未实现</span></span>
-          </p>
-          <button class='gate' id='arch-extension' data-route='extension' aria-pressed='false'>
-            <span class='gate-mark' aria-hidden='true'><svg class='ico'><use href='#i-grid'/></svg></span>
-            <span class='gate-copy'><strong>扩展执行器</strong><span>注册新的工具接口</span></span>
-          </button>
-        </div>
-        <div class='arch-tail'>
-          <div class='arch-return' id='arch-return'>
-            <strong>返回结果</strong>
-            <span>记录本轮，形成下一次观察</span>
-          </div>
-          <div class='runtime' id='arch-runtime'>
-            <p class='runtime-head'><span>共享 runtime</span><em>执行后读回观察，形成下一轮</em></p>
-            <div class='runtime-pair'>
-              <span class='runtime-node'><strong>Tool Executor</strong><em>动作下发</em></span>
-              <span class='runtime-bridge' aria-label='动作与回执双向传递'>↔</span>
-              <span class='runtime-node'><strong>Environment</strong><em>桌面与工具</em></span>
-            </div>
-          </div>
+        <div class='node arch-return' id='arch-return'>
+          <span class='node-orb' aria-hidden='true'><svg class='ico'><use href='#i-refresh'/></svg></span>
+          <p class='node-kicker'>下一轮</p>
+          <h3>带着结果，<br>重新观察。</h3>
+          <p class='node-note'>回传执行回执与最新状态。</p>
         </div>
         <svg class='arch-track' aria-hidden='true'>
           <defs><marker id='arch-arrow' viewBox='0 0 8 8' refX='6.4' refY='4' markerWidth='7' markerHeight='7' orient='auto'><path d='M1.4 1.6 6.2 4 1.4 6.4' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></marker></defs>
