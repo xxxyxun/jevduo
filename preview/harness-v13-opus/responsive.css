@@ -1,0 +1,179 @@
+/* JevDuo · responsive.css — 断点、密度、触屏与降级
+   由宽到窄层层覆盖 showcase.css，只调整布局与密度，不改基准视觉。 */
+
+/* ══ 1 · 超宽屏 ═════════════════════════════════ */
+@media (min-width:1400px){
+  :root{--shell:min(1280px,100% - clamp(60px,9vw,170px))}
+  .hero-foot{padding-bottom:clamp(72px,10vh,130px)}
+  .screen{--lib-w:186px}
+  .app-body{grid-template-columns:186px minmax(0,1fr)}
+}
+
+/* ══ 2 · 窄桌面 ═════════════════════════════════ */
+@media (max-width:1180px){
+  .architecture-board{grid-template-columns:minmax(0,.95fr) minmax(0,1fr) minmax(0,1.1fr);gap:40px 28px;padding:62px 40px 40px}
+  .node,.router,.runtime{padding:19px}
+  .router{padding:17px 15px 15px}
+  .gate{padding:11px 12px}
+  .runtime{padding:20px;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);row-gap:12px}
+  .runtime-flow{grid-column:1/-1}
+  .theater{grid-template-columns:minmax(0,1.4fr) minmax(272px,.68fr);gap:20px 24px}
+  .app-body{grid-template-columns:158px minmax(0,1fr)}
+}
+
+/* ══ 3 · 架构板转两列 ═══════════════════════════ */
+@media (max-width:1080px){
+  .architecture-board{grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    grid-template-areas:'input slow' 'lanes lanes' 'runtime runtime' 'return return';
+    gap:32px 26px;align-items:start}
+  .node{min-height:0}
+  .route-zone{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;gap:14px;padding:24px 20px}
+  .router{grid-row:1;grid-column:1/-1}
+  .pool{grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .arch-track{display:none}
+  .arch-return{flex-direction:column;align-items:flex-start;gap:8px}
+  .return-note{margin-left:0;max-width:none;text-align:left}
+  .theater{grid-template-columns:1fr}
+  .decision{padding:20px 0 0;border-left:0;border-top:1px solid var(--line)}
+}
+
+/* ══ 4 · 平板 ═══════════════════════════════════ */
+@media (max-width:960px){
+  html{scroll-padding-top:80px}
+  .header-inner{height:62px}
+  .arch-section,.execution-section,.film-section,.result-section{padding-block:clamp(52px,7vw,80px)}
+  .architecture-board{grid-template-columns:1fr;
+    grid-template-areas:'input' 'slow' 'lanes' 'runtime' 'return';padding:58px 22px 26px;gap:26px}
+  .pool{grid-template-columns:1fr;gap:10px}
+  .runtime{grid-template-columns:1fr;gap:14px}
+  .runtime-flow{grid-column:auto}
+  .architecture-board>.node+.node::before,.route-zone::before,.runtime::before,.arch-return::before{
+    content:'';position:absolute;left:50%;top:-18px;height:12px;border-left:2px dotted #c0b4a1}
+  .theater-foot{flex-wrap:wrap;gap:16px;align-items:center}
+  .beads-wrap{flex-basis:100%}
+  .theater-controls{width:100%;justify-content:space-between}
+  .model-mount{height:clamp(320px,52vw,460px)}
+  .closing-inner{align-items:flex-start}
+}
+
+/* ══ 5 · 手机 ═══════════════════════════════════ */
+@media (max-width:760px){
+  .opening{min-height:620px}
+  .assembly-stage{top:0;right:0;width:100%;height:58%;transform-origin:50% 42%;
+    transform:translate3d(0,calc(var(--dock,0) * -4vh),0) scale(calc(1 - var(--dock,0) * .12));
+    opacity:calc(1 - var(--dock,0) * .85)}
+  .model-aura{inset:0 0 8% 0}
+  .model-floor{left:18%;right:18%;bottom:4%;height:48px}
+  .scene-loading{bottom:5%}
+  .hero-scrim{background:linear-gradient(180deg,rgba(248,242,231,0) 28%,rgba(248,242,231,.76) 50%,#f8f2e7 70%)}
+  .hero-foot{gap:12px;padding-bottom:clamp(34px,6vh,58px)}
+  .hero-title{font-size:clamp(52px,11vw,84px)}
+  .hero-sub{max-width:26ch;font-size:16px}
+  .header-inner{gap:12px}
+  .nav{gap:14px}
+  .nav a{font-size:14px}
+  .github-link{padding:7px 11px}
+  .film-figure video{border-radius:18px}
+  .records>summary{padding:13px 15px}
+  .record-content{padding:0 15px 15px}
+  .workspace-tabs{display:flex;overflow-x:auto;scrollbar-width:none}
+  .workspace-tabs::-webkit-scrollbar{display:none}
+  .workspace-tab{flex:0 0 auto;min-width:110px}
+  .workspace-display.grid{aspect-ratio:4/3}
+  .workspace-transport{flex-wrap:wrap}
+  .chapter-jumps{grid-template-columns:1fr;gap:8px}
+  .viewer{border-radius:22px}
+  .footer-top{flex-wrap:wrap;gap:10px 18px;padding:22px 0}
+}
+
+/* ══ 6 · 小屏：工作台转纵向 ══════════════════════ */
+@media (max-width:700px){
+  body{font-size:16px;line-height:1.7}
+  .section-lead h2{font-size:clamp(27px,7.4vw,34px);line-height:1.14}
+  .lead{margin-top:13px;font-size:16px}
+  .eyebrow{letter-spacing:.1em}
+  .architecture-board{padding:54px 18px 22px;border-radius:24px}
+  .board-caption{left:20px}
+  .app-body{grid-template-columns:1fr}
+  .parts-library{border-right:0;border-top:1px solid var(--line);padding:12px}
+  .screen-canvas{order:-1}
+  .screen-results{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .target-part{grid-column:1/-1}
+  .other-part{flex-direction:column;align-items:flex-start;gap:6px}
+  .contract{grid-template-columns:1fr}
+  .contract-io{grid-column:1;grid-row:auto;margin-top:8px;gap:20px}
+  .contract-io>div{flex:1;min-width:0}
+  .contract-foot{gap:12px;align-items:flex-start;flex-wrap:wrap}
+  .saved{bottom:auto;top:38px}
+  .choice-row{padding:8px 10px 9px 22px}
+  .result-line{flex-wrap:wrap;gap:10px}
+  .result-line strong{font-size:16px}
+  .bead span{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;line-height:1.35;padding-right:2px}
+  .theater-controls{gap:8px}
+  .icon-btn{width:42px;height:42px}
+  .viewer-tools{position:relative;inset:auto;padding:14px 14px 0}
+  .seg button{padding:7px 11px}
+  .model-mount{height:clamp(248px,66vw,340px);margin-top:8px}
+  .viewer::before{top:48%}
+  .viewer-readout{padding:0 14px 10px}
+  .viewer-readout strong{font-size:22px}
+  .gear-controls{padding:0 14px 14px}
+  .model-transport{padding:12px 14px;flex-wrap:wrap}
+  #case-seek,.model-transport input{flex:1 1 100%;order:4}
+  .github-link span{display:none}
+  .nav{gap:12px}
+  .closing-actions{width:100%}
+  .btn{flex:1 1 auto;justify-content:center;padding:12px 18px}
+  .footer-bottom{flex-wrap:wrap;gap:4px 18px;padding-top:16px}
+}
+
+/* ══ 7 · 小屏微调 ═══════════════════════════════ */
+@media (max-width:460px){
+  .brand-word{font-size:16px}
+  .brand-mark{width:26px;height:26px;border-radius:8px}
+  .hero-sub{max-width:23ch}
+  .runtime-node strong{font-size:14px}
+  .beads{gap:6px}
+  .viewer-readout{gap:18px}
+  .seg{padding:4px}
+  .seg button{padding:7px 9px}
+  .btn{flex:1 1 100%}
+  .decision{padding-left:0}
+  .choice-row{padding-left:20px}
+}
+
+/* ══ 8 · 横屏短屏 ═══════════════════════════════ */
+@media (max-height:560px) and (orientation:landscape){
+  .opening{min-height:470px}
+  .assembly-stage{width:54%;height:98%}
+  .hero-foot{padding-bottom:26px;gap:9px}
+  .hero-title{font-size:clamp(42px,7vw,74px)}
+  .hero-sub{max-width:46ch;font-size:16px}
+  .arch-section,.execution-section,.film-section,.result-section{padding-block:42px}
+}
+
+/* ══ 9 · 触屏：去掉位移，补热区 ═════════════════ */
+@media (hover:none){
+  .nav a::after{display:none}
+  .gate:hover{transform:none;background:var(--card)}
+  .gate[aria-pressed='true']:hover{background:#fff}
+  .icon-btn:hover{transform:none}
+  .btn:hover{background:rgba(255,253,248,.9)}
+  .btn.primary:hover{background:var(--ink)}
+  .round-play:hover{background:#f8f1e4;color:var(--ink)}
+}
+
+@media (pointer:coarse){
+  .seg button{min-height:40px}
+  .gear-controls button{min-height:40px}
+  .round-play{width:40px;height:40px}
+  .chapter-jumps button{padding-block:13px}
+  .record-toggle{width:40px;height:40px;display:grid;place-items:center}
+  .bead{padding-block:4px}
+}
+
+/* ══ 10 · 极高对比偏好 ══════════════════════════ */
+@media (prefers-contrast:more){
+  :root{--line:rgba(72,55,32,.28);--line-2:rgba(72,55,32,.5);--ink-3:#5f5445}
+  #arch-wires path{stroke-dasharray:none;stroke-width:2}
+}
