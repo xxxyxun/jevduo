@@ -1,9 +1,7 @@
 'use strict';
 (() => {
   const $ = (id) => document.getElementById(id);
-  const icon = (name) => `<svg class='ico' aria-hidden='true'><use href='#i-${name}'/></svg>`;
   const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
-  const best = (list) => list.reduce((at, v, i) => (v > list[at] ? i : at), 0);
   const media = matchMedia('(prefers-reduced-motion: reduce)');
   const NS = 'http://www.w3.org/2000/svg';
   let reduced = media.matches;
@@ -11,7 +9,6 @@
   const stage = $('assembly-stage');
   const heroMount = $('hero-model-mount');
   const board = $('architecture-board');
-  const theater = $('execution-theater');
   const header = $('site-header');
   const progress = document.querySelector('.header-progress');
   const wireSvg = document.querySelector('.arch-track');
@@ -265,175 +262,6 @@
     drawBoard();
     cycle();
   }, { threshold: 0.2 }).observe(board);
-  /* 局部执行：观察 → 候选 → 选择 → 效果 → 读回 */
-  const STEPS = [
-    { name: '聚焦', obs: '搜索框已出现在当前观察中', picks: ['展开左侧分类', '点击零件搜索框', '打开最近工程'], weights: [11, 82, 7], stage: 1, receipt: '读回焦点：搜索框已激活' },
-    { name: '输入', obs: '搜索框已激活，零件编号已由慢模型给出', picks: ['修改工程名称', '重新打开零件库', '输入 64179'], weights: [5, 7, 88], stage: 2, receipt: '读回字段：输入值为 64179' },
-    { name: '选择', obs: '搜索结果已更新，目标框架出现在候选里', picks: ['选中目标框架', '再次输入编号', '选择普通砖块'], weights: [79, 13, 8], stage: 2, receipt: '读回选中状态：目标框架已选中' },
-    { name: '放置', obs: '目标框架已选中，可以放入当前工程', picks: ['切回搜索框', '放到指定装配位置', '重复选中框架'], weights: [9, 84, 7], stage: 3, receipt: '动作回执：框架已放入装配区' },
-    { name: '保存', obs: '本段装配已完成，等待保存', picks: ['关闭未保存工程', '重复放置框架', '保存当前工程'], weights: [4, 6, 90], stage: 4, receipt: '保存回执与最新观察已返回' },
-  ];
-  const BLOCKED = {
-    obs: '目标控件未出现在当前候选中',
-    picks: ['返回慢模型', '重复上次点击位置', '未确认就重放动作'],
-    weights: [94, 4, 2],
-    receipt: '保留当前状态，返回缺失控件与最后观察',
-  };
-  const beads = $('action-beads');
-  const choiceBox = $('local-choice');
-  const screen = $('mini-screen');
-  const searchValue = $('mini-search-value');
-  const canvasNote = $('mini-canvas-status');
-  const receipt = $('receipt');
-  const receiptText = $('receipt-text');
-  const selectedAction = $('selected-action');
-  const selectionCaption = $('selection-caption');
-  const playButton = $('loop-play');
-  const blockButton = $('loop-block');
-  selectedAction.setAttribute('aria-live', 'polite');
-  receiptText.textContent = '等待本步动作执行';
-  let phase = 'execution';
-  let action = 0;
-  let blocked = false;
-  let playing = false;
-  let applied = false;
-  let started = false;
-  let timers = [];
-  const later = (ms, fn) => timers.push(setTimeout(fn, ms));
-  const clear = () => { timers.forEach(clearTimeout); timers = []; };
-  const currentStage = () => Number(screen.dataset.stage || 0);
-  const barOf = (row) => row.querySelector('.choice-bar');
-  function paintScreen(state) {
-    screen.dataset.stage = String(state);
-    searchValue.textContent = state >= 2 ? '64179' : '零件编号';
-    canvasNote.textContent = state >= 3 ? '框架已放入工程' : '当前工程';
-  }
-  function paintPlay() {
-    playButton.innerHTML = playing ? icon('pause') : icon('play');
-    playButton.setAttribute('aria-label', playing ? '暂停执行流程' : '播放执行流程');
-  }
-  function paintBeads() {
-    const reviewing = phase === 'review';
-    const focused = beads.contains(document.activeElement);
-    beads.innerHTML = STEPS.map((step, i) => {
-      const state = reviewing || i < action ? 'is-done' : i === action ? 'is-active' : '';
-      return `<button type='button' class='bead ${state}' data-action='${i}' aria-pressed='${i === action && !reviewing}'><i aria-hidden='true'></i><span>${step.name}</span></button>`;
-    }).join('');
-    beads.style.setProperty('--done', (reviewing ? 1 : action / (STEPS.length - 1)).toFixed(3));
-    if (!focused) return;
-    const target = beads.querySelector(`[data-action='${action}']`);
-    if (target) target.focus({ preventScroll: true });
-  }
-  function paintChrome() {
-    const reviewing = phase === 'review';
-    $('slow-status').textContent = blocked ? '接收阻塞，调整子目标' : reviewing ? '核验本段结果' : '子目标已下发';
-    $('plan-state').textContent = blocked ? '处理缺失的信息' : reviewing ? '核验后决定下一步' : '等待本段执行结果';
-    $('work-title').textContent = blocked ? '停止局部循环' : reviewing ? '本段执行已结束' : 'JEV 选择下一动作';
-    $('observation-text').textContent = blocked ? BLOCKED.obs : reviewing ? '把执行结果与最新观察交给慢模型' : STEPS[action].obs;
-    $('decision-title').textContent = blocked ? 'JEV 选择返回' : 'JEV 候选选择';
-    $('goal-step').textContent = `第 ${action + 1} / ${STEPS.length} 步`;
-    blockButton.textContent = blocked ? '返回局部执行' : '遇阻时如何返回';
-    theater.dataset.blocked = String(blocked);
-    theater.dataset.phase = phase;
-    paintBeads();
-  }
-  function renderChoices(picks, weights) {
-    choiceBox.innerHTML = picks.map((text, i) => `<div class='choice-row' style='--i:${i}'>`
-      + `<span class='choice-label'>${text}</span>`
-      + `<strong class='choice-value'>${weights[i]}%</strong>`
-      + `<span class='choice-track' aria-hidden='true'><i class='choice-bar' style='--w:0%'></i></span>`
-      + '</div>').join('');
-    const rows = [...choiceBox.children];
-    const win = best(weights);
-    choiceBox.style.setProperty('--cursor-y', `${Math.round(rows[win].offsetTop + rows[win].offsetHeight / 2)}px`);
-    return { rows, win };
-  }
-  function finish(rows, win, picks) {
-    applied = true;
-    rows[win].classList.add('selected');
-    selectedAction.textContent = blocked ? '返回慢模型' : picks[win];
-    paintScreen(blocked ? currentStage() : STEPS[action].stage);
-    receiptText.textContent = blocked ? BLOCKED.receipt : STEPS[action].receipt;
-    receipt.classList.remove('flash');
-    void receipt.offsetWidth;
-    receipt.classList.add('flash');
-    screen.classList.add('is-scan');
-    later(400, () => receipt.classList.remove('flash'));
-    later(660, () => screen.classList.remove('is-scan'));
-    if (!playing) return;
-    later(800, () => {
-      if (!playing) return;
-      if (action >= STEPS.length - 1) review();
-      else { action += 1; frame(); }
-    });
-  }
-  function frame() {
-    clear();
-    applied = false;
-    const step = blocked ? BLOCKED : STEPS[action];
-    paintChrome();
-    paintPlay();
-    paintScreen(blocked ? currentStage() : action === 0 ? 0 : STEPS[action - 1].stage);
-    selectedAction.textContent = '评估候选中';
-    selectionCaption.textContent = blocked ? '返回条件' : '本次选择';
-    const { rows, win } = renderChoices(step.picks, step.weights);
-    const fill = () => rows.forEach((row, i) => barOf(row).style.setProperty('--w', `${step.weights[i]}%`));
-    if (reduced) { fill(); finish(rows, win, step.picks); return; }
-    later(240, fill);
-    later(940, () => {
-      rows[win].classList.add('selected');
-      selectedAction.textContent = blocked ? '返回慢模型' : step.picks[win];
-      selectionCaption.textContent = blocked ? '返回条件' : 'JEV 已选';
-    });
-    later(1120, () => finish(rows, win, step.picks));
-  }
-  function review() {
-    clear();
-    playing = false;
-    phase = 'review';
-    paintChrome();
-    paintPlay();
-  }
-  function play() {
-    clear();
-    started = true;
-    blocked = false;
-    if (phase === 'review') action = 0;
-    phase = 'execution';
-    playing = true;
-    frame();
-  }
-  function pause() {
-    clear();
-    playing = false;
-    screen.classList.remove('is-scan');
-    paintPlay();
-  }
-  playButton.addEventListener('click', () => { if (playing) pause(); else play(); });
-  $('loop-replay').addEventListener('click', () => { action = 0; play(); });
-  blockButton.addEventListener('click', () => {
-    started = true;
-    playing = false;
-    blocked = !blocked;
-    phase = 'execution';
-    frame();
-  });
-  beads.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-action]');
-    if (!button) return;
-    const index = Number(button.dataset.action);
-    if (!(index >= 0 && index < STEPS.length)) return;
-    started = true;
-    playing = false;
-    blocked = false;
-    phase = 'execution';
-    action = index;
-    frame();
-  });
-  new IntersectionObserver((entries) => {
-    if (!entries[0].isIntersecting) { if (playing) pause(); return; }
-    if (!started && !reduced) play();
-  }, { threshold: 0.35 }).observe(theater);
   /* 滚动、减轻动效与导出 */
   let scrollFrame = 0;
   function readScroll() {
@@ -468,9 +296,6 @@
       if (boardInView) cycle();
       return;
     }
-    clear();
-    playing = false;
-    paintPlay();
     if (boardInView) setPhase('idle');
   }
   media.addEventListener('change', applyMotion);
@@ -480,7 +305,6 @@
       startIntro(false);
       return;
     }
-    if (playing) pause();
     setPhase('idle');
     if (viewer) viewer.play(false);
     introClock = 0;
@@ -492,9 +316,8 @@
   document.fonts.ready.then(() => drawBoard());
   window.JevDuoScene = {
     ready, mountResult, get viewer() { return viewer; },
-    state: () => ({ route, phase, action, blocked, playing, owner, applied, boardPhase, intro, cameraLocked }),
+    state: () => ({ ...window.JevDuoExecution.state(), route, owner, boardPhase, intro, cameraLocked }),
   };
   readScroll();
   drawBoard();
-  frame();
 })();

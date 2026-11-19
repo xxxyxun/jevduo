@@ -14,6 +14,7 @@
 <script defer src='../../assets/three.js'></script>
 <script defer src='../../assets/viewer.js'></script>
 <script defer src='story.js'></script>
+<script defer src='execution.js'></script>
 <script defer src='showcase.js'></script>
 </head>
 <body>
@@ -30,6 +31,9 @@
 <symbol id='i-play' viewBox='0 0 24 24'><path fill='currentColor' d='M8.4 5.2 19 12 8.4 18.8V5.2Z'/></symbol>
 <symbol id='i-pause' viewBox='0 0 24 24'><g fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round'><path d='M9 5.4v13.2M15 5.4v13.2'/></g></symbol>
 <symbol id='i-plus' viewBox='0 0 24 24'><g fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round'><path d='M12 5.6v12.8M5.6 12h12.8'/></g></symbol>
+<symbol id='i-save' viewBox='0 0 24 24'><g fill='none' stroke='currentColor' stroke-width='1.6' stroke-linejoin='round'><path d='M4 3h13l3 3v15H4Z'/><path d='M8 3v6h8V3M8 21v-8h8v8'/></g></symbol>
+<symbol id='part-frame' viewBox='0 0 180 120'><path d='m16 43 55 34 93-28v12L71 90 16 56Z' fill='#94a4b8' stroke='#8191a7'/><path d='m16 43 92-28 56 34-93 28Zm24 2 33 20 67-20-34-19Z' fill='#dfe6ef' fill-rule='evenodd' stroke='#a1afc1' stroke-width='1.3'/><path d='m40 45 33 20 67-20v8L73 74 40 54Z' fill='#bac7d7'/><path d='m40 45 33 20 67-20' fill='none' stroke='#f8fbff' stroke-width='2'/><g fill='#61758e' stroke='#d5dfea'><ellipse cx='30' cy='57' rx='3.4' ry='2.8'/><ellipse cx='44' cy='65' rx='3.4' ry='2.8'/><ellipse cx='59' cy='74' rx='3.4' ry='2.8'/><ellipse cx='87' cy='79' rx='3.5' ry='2.9'/><ellipse cx='104' cy='74' rx='3.5' ry='2.9'/><ellipse cx='121' cy='69' rx='3.5' ry='2.9'/><ellipse cx='138' cy='64' rx='3.5' ry='2.9'/><ellipse cx='155' cy='59' rx='3.5' ry='2.9'/></g><path d='m18 42 90-27 54 33' fill='none' stroke='#fff' stroke-width='1.8'/></symbol>
+<symbol id='part-beam' viewBox='0 0 180 100'><path d='m12 45 125-35 31 18-125 37Z' fill='#d1dbe8' stroke='#9eacbf'/><path d='m12 45 31 20 125-37v12L43 77 12 57Z' fill='#9dacbf' stroke='#8192a9'/><g fill='#546c88' stroke='#e4ebf5' stroke-width='2'><ellipse cx='40' cy='46' rx='7' ry='4'/><ellipse cx='63' cy='40' rx='7' ry='4'/><ellipse cx='86' cy='33' rx='7' ry='4'/><ellipse cx='109' cy='27' rx='7' ry='4'/><ellipse cx='132' cy='21' rx='7' ry='4'/></g></symbol>
 <symbol id='i-github' viewBox='0 0 24 24'><path fill='currentColor' d='M12 2.2a9.8 9.8 0 0 0-3.1 19.1c.5.1.7-.2.7-.5v-1.7c-2.7.6-3.3-1.3-3.3-1.3-.4-1.1-1.1-1.4-1.1-1.4-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.4-1.1.7-1.3-2.2-.2-4.5-1.1-4.5-4.9 0-1.1.4-2 1-2.6-.1-.3-.4-1.3.1-2.6 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 4.9 0c1.9-1.3 2.7-1 2.7-1 .5 1.3.2 2.3.1 2.6.6.6 1 1.5 1 2.6 0 3.8-2.3 4.7-4.5 4.9.4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5A9.8 9.8 0 0 0 12 2.2Z'/></symbol>
 </svg>
 <a class='skip-link' href='#film'>跳到正文</a>
@@ -204,31 +208,53 @@
       <header class='section-lead exec-lead'>
         <div class='lead-main'>
           <p class='eyebrow'>GUI 路线 · 局部展开</p>
-          <h2 id='execution-title'>一个子目标，<br>五次选择。</h2>
+          <h2 id='execution-title'>一个子目标，<br>连续执行。</h2>
           <p class='lead'>慢模型只给子目标与必需输入。之后的每一步，JEV 读最新截图，在候选动作里选一个。</p>
         </div>
         <p class='exec-status'><i class='status-dot' aria-hidden='true'></i><span id='slow-status'>子目标已下发</span></p>
       </header>
       <div class='theater' id='execution-theater' data-phase='execution' data-blocked='false'>
         <div class='contract'>
-          <p class='contract-kicker'>慢模型 · 子目标</p>
-          <p class='contract-goal'>装好支架模块，<br>保存当前工程。</p>
+          <p class='contract-kicker'><svg class='ico'><use href='#i-brain'/></svg>慢模型 · 子目标</p>
+          <p class='contract-goal'>装好支架模块，保存当前工程。</p>
           <dl class='contract-io'>
             <div><dt>输入</dt><dd>零件编号 64179</dd></div>
             <div><dt>返回</dt><dd>完成 · 遇阻 · 预算到达</dd></div>
           </dl>
           <div class='contract-foot'>
             <p class='contract-state'><span>状态</span><span id='plan-state'>等待本段执行结果</span></p>
-            <p class='goal-step' id='goal-step'>第 1 / 5 步</p>
+            <p class='goal-step' id='goal-step'>JEV 局部执行</p>
           </div>
         </div>
         <div class='observe'>
-          <div class='observe-head'><strong id='work-title'>JEV 选择下一动作</strong><span id='observation-text'>搜索框已出现在当前观察中</span></div>
-          <div class='screen' id='mini-screen'>
-            <span class='screen-tag'>当前观察 · 示意</span>
-            <div class='screen-search' id='mini-search'><svg class='ico'><use href='#i-eye'/></svg><span id='mini-search-value'>零件编号</span><i class='caret' aria-hidden='true'></i></div>
-            <div class='screen-results' id='mini-parts' aria-hidden='true'><span class='part part-a'></span><span class='part part-b'></span><span class='part part-c'></span></div>
-            <div class='screen-canvas'><span class='placed' id='placed-part' aria-hidden='true'></span><span class='canvas-note' id='mini-canvas-status'>当前工程</span><span class='saved' id='saved-mark'><svg class='ico'><use href='#i-check'/></svg>已保存</span></div>
+          <div class='observe-head'><strong id='work-title'>装配工作台</strong><span id='observation-text'>零件库已就绪</span></div>
+          <div class='screen' id='mini-screen' aria-label='零件搜索、放置与保存的界面重建动画'>
+            <div class='app-titlebar'><svg class='ico'><use href='#i-grid'/></svg><strong>支架模块</strong><span class='screen-tag'>界面动画</span></div>
+            <div class='app-toolbar'><span class='app-tool'><svg class='ico'><use href='#i-cursor'/></svg>选择</span><span class='app-tool'><svg class='ico'><use href='#i-plus'/></svg>插入</span><span class='app-tool app-save' id='app-save'><svg class='ico'><use href='#i-save'/></svg>保存</span><span class='app-file' id='app-file-state'>尚未保存</span></div>
+            <div class='app-body'>
+              <aside class='parts-library'>
+                <div class='library-head'><strong>零件库</strong><span>Technic</span></div>
+                <label class='screen-search' id='mini-search'><svg class='ico'><use href='#i-eye'/></svg><input id='mini-search-value' aria-label='搜索零件' placeholder='搜索零件' readonly tabindex='-1'><i class='caret' aria-hidden='true'></i></label>
+                <div class='screen-results' id='mini-parts'>
+                  <div class='library-part target-part' id='library-target'><svg class='part-shape'><use href='#part-frame'/></svg><strong>64179</strong><span>框架</span><i class='part-selected'><svg class='ico'><use href='#i-check'/></svg></i></div>
+                  <div class='library-part other-part'><svg class='part-shape'><use href='#part-beam'/></svg><span>连接梁</span></div>
+                  <div class='library-part other-part'><svg class='part-shape'><use href='#part-frame'/></svg><span>其他框架</span></div>
+                </div>
+              </aside>
+              <div class='screen-canvas' id='assembly-canvas'>
+                <div class='viewport-file'><svg class='ico'><use href='#i-file'/></svg>support_module.io</div>
+                <div class='work-grid' aria-hidden='true'></div>
+                <svg class='assembly-base' viewBox='0 0 520 360' aria-hidden='true'><ellipse cx='257' cy='263' rx='143' ry='24' fill='#9cacc7' opacity='.14'/><g transform='translate(90 156) scale(1.35 .9)'><use href='#part-beam' width='180' height='100'/></g><g transform='translate(222 113) scale(1.35 .9)'><use href='#part-beam' width='180' height='100'/></g><path d='m167 230 102-31m-36 45 106-32' stroke='#405b83' stroke-width='10' stroke-linecap='round'/><g fill='#2f5bff' stroke='#b7caff' stroke-width='3'><circle cx='174' cy='225' r='7'/><circle cx='308' cy='185' r='7'/><circle cx='234' cy='242' r='7'/><circle cx='366' cy='201' r='7'/></g></svg>
+                <div class='drop-target' id='drop-target'><svg class='part-shape'><use href='#part-frame'/></svg></div>
+                <svg class='placed-part' id='placed-part' aria-label='已放置的框架'><use href='#part-frame'/></svg>
+                <span class='saved' id='saved-mark'><svg class='ico'><use href='#i-check'/></svg>工程已保存</span>
+                <div class='viewport-axis' aria-hidden='true'><i>X</i><i>Y</i><i>Z</i></div>
+              </div>
+            </div>
+            <div class='app-statusbar'><span id='mini-canvas-status'>装配工作区</span><span id='app-operation'>等待下一动作</span></div>
+            <svg class='drag-part' id='drag-part' aria-hidden='true'><use href='#part-frame'/></svg>
+            <div class='demo-cursor' id='demo-cursor' aria-hidden='true'><i class='click-ring'></i><svg viewBox='0 0 28 32'><path d='M3 2 24 17l-10 1-4 10Z' fill='#10234d' stroke='#fff' stroke-width='2' stroke-linejoin='round'/></svg></div>
+            <div class='blocked-notice'><svg class='ico'><use href='#i-refresh'/></svg>目标不在候选中，交还慢模型</div>
           </div>
           <p class='receipt' id='receipt'><svg class='ico'><use href='#i-refresh'/></svg><span id='receipt-text'>执行后读回：搜索框已激活</span><em>执行反馈</em></p>
         </div>
