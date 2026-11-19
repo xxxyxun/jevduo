@@ -1,5 +1,4 @@
 'use strict';
-
 (() => {
   const $ = (id) => document.getElementById(id);
   const icon = (name) => `<svg class='ico' aria-hidden='true'><use href='#i-${name}'/></svg>`;
@@ -19,7 +18,7 @@
   const wireLayer = $('arch-wires');
   const pulseLayer = $('arch-pulses');
   const gates = [$('arch-jev'), $('arch-cli'), $('arch-extension')];
-  const stops = [...$('arch-runtime').querySelectorAll('.runtime-stops > li')];
+  const stops = [...$('arch-runtime').querySelectorAll('.runtime-node')];
   /* 三维装配：一个 viewer 在开场与结果之间迁移 */
   let viewer = null;
   let owner = 'hero';
@@ -28,15 +27,20 @@
   let introRaf = 0;
   let introClock = 0;
   let cameraLocked = false;
-  function heroCamera(walk) {
-    if (!viewer) return;
-    const aspect = Math.min(heroMount.clientWidth, innerWidth) / Math.max(1, heroMount.clientHeight);
-    const fit = Math.max(1, 1.5 / Math.max(0.6, aspect));
+  let heroSphere = null;
+  function heroFit(walk) {
+    if (!viewer || !heroSphere) return;
+    const aspect = heroMount.clientWidth / heroMount.clientHeight;
+    const halfV = 33 * Math.PI / 360;
+    const halfH = Math.atan(Math.tan(halfV) * aspect);
+    const ease = walk * walk * (3 - 2 * walk);
+    const direction = cameraLocked ? viewer.snapshot().camera : {
+      yaw: -1.27 + ease * 0.08, elevation: 0.8 - ease * 0.12,
+    };
     viewer.setCamera({
-      yaw: -1.27 + walk * 0.08,
-      elevation: 0.8 - walk * 0.12,
-      radius: (0.64 - walk * 0.04) * fit,
-      target: [-0.06, 0.015, 0.02],
+      yaw: direction.yaw, elevation: direction.elevation,
+      radius: heroSphere.radius / (Math.sin(Math.min(halfV, halfH)) * 0.86) * (1 + 0.55 * (1 - ease)),
+      target: heroSphere.center.toArray(),
     });
   }
   function introTick(now) {
@@ -46,12 +50,12 @@
     const step = Math.min(1000, now - introClock);
     introClock = now;
     if (intro < 1) { intro = clamp01(intro + step / 7600); viewer.seek(180 * intro); }
-    if (!cameraLocked) heroCamera(intro);
+    heroFit(intro);
     if (intro < 1) introRaf = requestAnimationFrame(introTick);
   }
   function startIntro(reset) {
     if (!viewer || owner !== 'hero') return;
-    if (reduced) { intro = 1; viewer.seek(180); heroCamera(1); return; }
+    if (reduced) { intro = 1; viewer.seek(180); heroFit(1); return; }
     if (reset) { intro = 0; viewer.seek(0); }
     introClock = 0;
     if (!introRaf) introRaf = requestAnimationFrame(introTick);
@@ -71,8 +75,7 @@
     viewer.play(false);
     viewer.moveTo($('model-mount'));
     viewer.setMode('motion');
-    const loading = $('model-loading');
-    if (loading) loading.remove();
+    $('model-loading')?.remove();
   }
   async function initScene() {
     try {
@@ -93,12 +96,14 @@
       viewer.renderer.toneMappingExposure = 1.04;
       viewer.setMode('assembly');
       viewer.play(false);
+      viewer.seek(180);
+      const model = viewer.scene.children.find((node) => node.type === 'Group');
+      heroSphere = new window.THREE.Box3().setFromObject(model).getBoundingSphere(new window.THREE.Sphere());
       viewer.seek(0);
-      viewer.setCamera({ yaw: -1.27, elevation: 0.8, radius: 0.64 });
+      heroFit(0);
       viewer.canvas.setAttribute('aria-label', '拖动旋转装配模型');
       viewer.canvas.addEventListener('pointerdown', () => { cameraLocked = true; }, { passive: true });
-      const loading = $('hero-model-loading');
-      if (loading) loading.remove();
+      $('hero-model-loading').remove();
       stage.classList.add('is-ready');
       startIntro(true);
       return viewer;
@@ -115,13 +120,10 @@
     else introClock = 0;
   }).observe(opening);
   /* 架构：量测真实 rect 的轨道，一次只走一条路 */
+  const labelsLayer = $('arch-labels');
   const ROUTES = ['gui', 'cli', 'extension'];
-  const DUR = { routing: 1100, executing: 2300, returning: 1300, idle: 3000 };
-  const FLOW = {
-    routing: [['goal', 0, 0.62], ['dispatch', 0.34, 1]],
-    executing: [['run', 0, 1]],
-    returning: [['back', 0, 1]],
-  };
+  const DUR = { routing: 1100, executing: 2200, returning: 1400, idle: 2800 };
+  const FLOW = { routing: [['goal', 0, 0.6], ['dispatch', 0.38, 1]], executing: [['run', 0, 1]], returning: [['back', 0, 0.42], ['loop', 0.46, 1]] };
   let route = 'gui';
   let boardPhase = 'idle';
   let boardInView = false;
@@ -131,13 +133,6 @@
   let frameRect = null;
   let wireMap = {};
   let stopTimers = [];
-  const dots = [0, 1, 2].map(() => {
-    const dot = document.createElementNS(NS, 'circle');
-    dot.setAttribute('r', '3');
-    dot.style.opacity = '0';
-    pulseLayer.appendChild(dot);
-    return dot;
-  });
   const n1 = (v) => Math.round(v * 10) / 10;
   const box = (el) => {
     const r = el.getBoundingClientRect();
@@ -145,27 +140,23 @@
     const y = r.top - frameRect.top;
     return { x, y, right: x + r.width, bottom: y + r.height, cx: x + r.width / 2, cy: y + r.height / 2 };
   };
-  const hc = (x1, y1, x2, y2) => {
-    const dx = (x2 - x1) * 0.55;
-    return `M${n1(x1)} ${n1(y1)}C${n1(x1 + dx)} ${n1(y1)} ${n1(x2 - dx)} ${n1(y2)} ${n1(x2)} ${n1(y2)}`;
-  };
-  const vc = (x1, y1, x2, y2) => {
-    const dy = (y2 - y1) * 0.5;
-    return `M${n1(x1)} ${n1(y1)}C${n1(x1)} ${n1(y1 + dy)} ${n1(x2)} ${n1(y2 - dy)} ${n1(x2)} ${n1(y2)}`;
-  };
+  const dots = [0, 1].map(() => {
+    const dot = pulseLayer.appendChild(document.createElementNS(NS, 'circle'));
+    dot.setAttribute('r', '3');
+    dot.style.opacity = '0';
+    return dot;
+  });
   function dress() {
     const live = boardPhase === 'routing' || boardPhase === 'executing';
-    ['goal', 'dispatch', 'run'].forEach((key) => {
-      if (wireMap[key]) wireMap[key].classList.toggle('is-active', live);
-    });
-    if (wireMap.back) wireMap.back.classList.toggle('is-return', boardPhase === 'returning');
+    ['goal', 'dispatch', 'run'].forEach((key) => { if (wireMap[key]) wireMap[key].classList.toggle('is-active', live); });
+    ['back', 'loop'].forEach((key) => { if (wireMap[key]) wireMap[key].classList.toggle('is-return', boardPhase === 'returning'); });
   }
   function drawBoard() {
-    if (innerWidth < 960 || board.clientWidth < 560) {
+    if (innerWidth < 960 || board.clientWidth < 620) {
       wireSvg.style.display = 'none';
       wireLayer.innerHTML = '';
+      labelsLayer.innerHTML = '';
       wireMap = {};
-      board.style.setProperty('--beam', '0deg');
       return;
     }
     wireSvg.style.display = '';
@@ -173,24 +164,41 @@
     if (frameRect.width < 60) return;
     wireSvg.setAttribute('viewBox', `0 0 ${frameRect.width} ${frameRect.height}`);
     const input = box($('arch-input'));
-    const planner = box($('arch-slow'));
+    const observe = box($('arch-observe'));
+    const slow = box($('arch-slow'));
+    const end = box($('arch-end'));
+    const score = box($('arch-score'));
     const router = box($('arch-router'));
-    const gate = box(gates[Math.max(0, ROUTES.indexOf(route))]);
     const runtime = box($('arch-runtime'));
-    const out = frameRect.width + 26;
-    const back = -18;
+    const back = box($('arch-return'));
+    const pool = [...board.querySelectorAll('.pool .gate')].map((node) => Object.assign({ key: node.dataset.route }, box(node)));
+    const busRoute = n1(router.bottom + (pool[0].y - router.bottom) * 0.56);
+    const busRun = n1(pool[0].bottom + (runtime.y - pool[0].bottom) * 0.5);
+    const top = 18;
     const paths = {
-      input: vc(input.cx, input.bottom, planner.cx, planner.y),
-      goal: hc(planner.right, planner.cy, router.x, router.cy),
-      dispatch: hc(router.right, router.cy, gate.x - 3, gate.cy),
-      run: `M${n1(gate.right)} ${n1(gate.cy)}C${n1(out)} ${n1(gate.cy)} ${n1(out)} ${n1(runtime.cy)} ${n1(runtime.right - 1)} ${n1(runtime.cy)}`,
-      back: `M${n1(runtime.x - 2)} ${n1(runtime.cy)}C${n1(back)} ${n1(runtime.cy)} ${n1(back)} ${n1(planner.cy)} ${n1(planner.x - 2)} ${n1(planner.cy)}`,
+      step1: `M${n1(input.right)} ${n1(input.cy)}H${n1(observe.x)}`,
+      step2: `M${n1(observe.right)} ${n1(observe.cy)}H${n1(slow.x)}`,
+      stop: `M${n1(slow.right)} ${n1(slow.cy)}H${n1(end.x)}`,
+      score: `M${n1(end.cx)} ${n1(end.bottom)}V${n1(score.y)}`,
+      goal: `M${n1(slow.cx)} ${n1(slow.bottom)}V${n1(router.y)}`,
+      back: `M${n1(runtime.x)} ${n1(runtime.cy)}H${n1(back.right)}`,
+      loop: `M${n1(back.x)} ${n1(back.cy)}H26Q16 ${n1(back.cy)} 16 ${n1(back.cy - 14)}V${n1(top + 14)}Q16 ${n1(top)} 26 ${n1(top)}H${n1(observe.cx)}V${n1(observe.y)}`,
     };
-    wireLayer.innerHTML = Object.keys(paths).map((key) => `<path id='w-${key}' d='${paths[key]}'/>`).join('');
+    const parts = Object.keys(paths).map((key) => `<path id='w-${key}' d='${paths[key]}'${key === 'score' ? " class='is-note'" : ''}/>`);
+    pool.forEach((gate) => {
+      parts.push(`<path id='w-dispatch-${gate.key}' class='is-lane' data-kind='${gate.key}' d='M${n1(router.cx)} ${n1(router.bottom)}V${busRoute}H${n1(gate.cx)}V${n1(gate.y)}'/>`);
+      parts.push(`<path id='w-run-${gate.key}' class='is-lane' data-kind='${gate.key}' d='M${n1(gate.cx)} ${n1(gate.bottom)}V${busRun}H${n1(runtime.cx)}V${n1(runtime.y)}'/>`);
+    });
+    wireLayer.innerHTML = parts.join('');
     wireMap = {};
     wireLayer.querySelectorAll('path').forEach((path) => { wireMap[path.id.slice(2)] = path; });
-    const angle = Math.atan2(gate.cy - router.cy, gate.cx - router.cx) * 180 / Math.PI;
-    board.style.setProperty('--beam', `${angle.toFixed(1)}deg`);
+    wireMap.dispatch = wireMap[`dispatch-${route}`];
+    wireMap.run = wireMap[`run-${route}`];
+    const mark = (x, y, text, mid) => `<text x='${n1(x)}' y='${n1(y)}'${mid ? " text-anchor='middle'" : ''}>${text}</text>`;
+    labelsLayer.innerHTML = mark((slow.right + end.x) / 2, slow.cy - 12, '成功 / 失败', 1)
+      + mark(slow.cx + 14, (slow.bottom + router.y) / 2 + 5, '继续 · 一个子目标')
+      + mark(end.cx + 14, (end.bottom + score.y) / 2 + 5, '评测旁路')
+      + mark(34, 13, '下一轮');
     dress();
   }
   function setPhase(name) {
@@ -201,7 +209,7 @@
     stopTimers.forEach(clearTimeout);
     stopTimers = [];
     if (name === 'executing') {
-      stops.forEach((stop, i) => stopTimers.push(setTimeout(() => stop.classList.add('is-lit'), 260 + i * 560)));
+      stops.forEach((stop, i) => stopTimers.push(setTimeout(() => stop.classList.add('is-lit'), 240 + i * 520)));
     } else {
       stops.forEach((stop) => stop.classList.remove('is-lit'));
     }
@@ -236,17 +244,10 @@
   function cycle() {
     clearTimeout(boardTimer);
     if (reduced || !boardInView || document.hidden) { setPhase('idle'); return; }
-    setPhase('routing');
-    boardTimer = setTimeout(() => {
-      setPhase('executing');
-      boardTimer = setTimeout(() => {
-        setPhase('returning');
-        boardTimer = setTimeout(() => {
-          setPhase('idle');
-          boardTimer = setTimeout(cycle, DUR.idle);
-        }, DUR.returning);
-      }, DUR.executing);
-    }, DUR.routing);
+    const phases = ['idle', 'routing', 'executing', 'returning'];
+    const next = phases[(phases.indexOf(boardPhase) + 1) % phases.length];
+    setPhase(next);
+    boardTimer = setTimeout(cycle, DUR[next]);
   }
   gates.forEach((gate) => gate.addEventListener('click', () => {
     route = gate.dataset.route;
@@ -255,6 +256,7 @@
     const label = gate.querySelector('strong');
     if (label) $('router-selection').textContent = label.textContent;
     drawBoard();
+    setPhase('idle');
     cycle();
   }));
   new IntersectionObserver((entries) => {
@@ -484,13 +486,12 @@
     introClock = 0;
   });
   new ResizeObserver(() => drawBoard()).observe(board);
-  addEventListener('resize', () => { readScroll(); drawBoard(); }, { passive: true });
-  addEventListener('load', () => drawBoard());
+  const refitHero = () => { if (viewer && owner === 'hero') heroFit(intro); };
+  addEventListener('resize', () => { readScroll(); drawBoard(); refitHero(); }, { passive: true });
+  new ResizeObserver(refitHero).observe(heroMount);
   document.fonts.ready.then(() => drawBoard());
   window.JevDuoScene = {
-    ready,
-    mountResult,
-    get viewer() { return viewer; },
+    ready, mountResult, get viewer() { return viewer; },
     state: () => ({ route, phase, action, blocked, playing, owner, applied, boardPhase, intro, cameraLocked }),
   };
   readScroll();
