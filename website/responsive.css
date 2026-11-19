@@ -1,244 +1,187 @@
-/* JevDuo — responsive layer.
-   Editorial dispatch desk: paper, hairlines, one accent, tabular readouts.
-   Breakpoints: 1500 / 1280 / 1080 / 999 / 900 / 760 / 640 / 520 / 400. */
+/* JevDuo · responsive.css — 断点、密度、触屏与降级
+   由宽到窄层层覆盖 showcase.css，只调整布局与密度，不改动基准视觉。 */
 
-@keyframes bar-in-x{from{transform:scaleX(.02)}to{transform:scaleX(1)}}
-
-@media (min-width:1500px){
-  .shell,.hero-copy{width:min(1320px,calc(100% - 160px))}
-  .assembly-stage{right:0;width:70%;height:90svh}
-  .architecture-board{padding-inline:56px;gap:40px clamp(48px,5vw,88px)}
-  .execution-theater{grid-template-columns:minmax(290px,25%) minmax(0,1fr)}
-  .model-mount{height:400px}
-  .gear-controls button{min-height:36px}
+/* ══ 1 · 超宽屏 ══════════════════════════════════ */
+@media (min-width:1400px){
+  :root{--shell:min(1280px,100% - clamp(64px,10vw,180px))}
+  .rail-flow{left:calc(50% - 706px)}
+  .architecture-board{min-height:760px;column-gap:clamp(28px,4vw,72px)}
+  .hero-foot{padding-bottom:clamp(72px,10vh,132px)}
+  .arch-planner{padding:32px 30px 34px}
 }
 
-@media (max-width:1280px){
-  .shell,.hero-copy{width:calc(100% - 80px)}
-  .nav{gap:22px}
-  .architecture-board{padding:34px 32px 30px;gap:30px 46px}
-  .routing-core{min-height:330px;padding:34px 18px 26px}
-  .routing-core::before{width:136px;height:136px}
-  .routing-core::after{width:200px;height:200px}
-  .routing-core>strong{font-size:30px}
-  .routing-core>p{font-size:14px}
-  .arch-planning strong{font-size:18px}
-  .arch-planning p{font-size:14px}
-  .arch-lane{grid-template-columns:38px minmax(0,1fr) 20px;gap:10px;padding:14px 12px}
-  .lane-copy strong{font-size:18px}
-  .lane-copy span{font-size:14px}
-  .node-icon{width:38px;height:38px}
-  .node-icon>svg{width:21px;height:21px}
-  .router-selection{flex-direction:column;align-items:flex-start;gap:1px}
-  .execution-plan{padding:26px 22px}
-  .goal-ticket>strong{font-size:20px}
-  .execution-work{padding:24px 22px}
-  .local-workspace{gap:18px}
-  .choice-value{font-size:18px}
-  .result-section{gap:36px}
-  .model-mount{height:330px}
+/* ══ 2 · 窄桌面 ══════════════════════════════════ */
+@media (max-width:1240px){
+  .architecture-board{grid-template-columns:minmax(0,1fr) clamp(236px,24vw,296px) minmax(0,1fr);column-gap:clamp(16px,2.4vw,40px)}
+  .gate{width:min(288px,24vw)}
+  .gate[aria-pressed=true]{transform:translateX(-10px)}
 }
 
-@media (max-width:1080px){
-  .execution-heading{flex-direction:column;align-items:flex-start;gap:14px}
-  .heading-note{max-width:62ch}
-  .execution-theater{grid-template-columns:minmax(0,1fr)}
-  .execution-plan{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:14px 30px;align-items:start;border-right:0;border-bottom:1px solid var(--line);padding:24px 24px 26px}
-  .plan-head{grid-column:1;grid-row:1}
-  .goal-ticket{grid-column:2;grid-row:1/span 2;margin-top:0}
-  .plan-state{grid-column:1;grid-row:2;margin-top:0}
-  .execution-work{padding:26px 24px}
-  .model-mount{height:320px}
+@media (max-width:1120px){
+  .theater>*{padding-inline:clamp(14px,1.7vw,22px)}
+  .arch-planner{padding:26px 22px 28px}
+  .gate{gap:10px;padding:12px 13px}
+  .gate-copy strong{font-size:15px}
+  .contract-goal{font-size:clamp(19px,1.8vw,23px)}
+  .runtime{gap:14px;padding:14px 18px}
+  .runtime-name{letter-spacing:.08em}
+  .section-lead{margin-bottom:clamp(28px,3.4vw,44px)}
 }
 
-@media (max-width:999px){
-  .architecture-heading{flex-wrap:wrap;align-items:center;gap:14px 28px;min-height:0;margin-bottom:28px}
-  #architecture-model-slot{width:260px;height:160px;margin-left:auto}
-  .architecture-board{grid-template-columns:minmax(0,1fr);grid-template-areas:'plan' 'router' 'lanes' 'runtime' 'boundary' 'closeout';row-gap:42px;padding:26px 26px 24px}
-  .architecture-wires{display:none}
-  .arch-planning{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));position:relative;align-self:stretch}
-  .arch-planning>.arch-node{padding:16px 14px;border-bottom:0}
-  .arch-planning>.arch-node+.arch-node{border-left:1px solid var(--line)}
-  .arch-planning::after{content:'';position:absolute;left:50%;bottom:-26px;width:1px;height:17px;background:var(--line-2)}
-  .routing-core{min-height:320px}
-  .arch-lanes{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:none;gap:12px;align-content:stretch}
-  .arch-lanes::before{content:'';position:absolute;left:50%;top:-29px;width:1px;height:17px;background:var(--line-2)}
-  .arch-runtime{position:relative}
-  .arch-runtime::before{content:'';position:absolute;left:50%;top:-30px;width:1px;height:18px;background:var(--line-2)}
-  .arch-closeout{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr)}
+/* ══ 3 · 平板：架构转纵向轨道，执行三栏叠放 ══════ */
+@media (max-width:960px){
+  html{scroll-padding-top:80px}
+  .header-inner{height:60px}
+  .arch-section{padding-block:clamp(56px,8vw,84px)}
+  .architecture-board{grid-template-columns:1fr;grid-template-rows:none;row-gap:18px;min-height:0;margin-top:26px}
+  .arch-input,.arch-planner,.router,.return-group,.runtime{grid-column:1;grid-row:auto}
+  .arch-input{max-width:100%;justify-self:stretch}
+  .arch-planner{align-self:stretch;border-radius:22px}
+  .planner-sub{max-width:46ch}
+  .router{justify-self:center;width:clamp(232px,50vw,286px);margin:6px 0}
+  .router-arm,.ring-b{display:none}
+  .gate{position:static;width:100%;transform:none !important;border-radius:16px}
+  .gate[aria-pressed=true]{box-shadow:inset 0 0 0 1px rgba(47,91,255,.34),0 20px 40px -36px rgba(20,40,90,.85)}
+  .arch-track{display:none}
+  .runtime{flex-direction:column;align-items:stretch;gap:14px;border-radius:22px;padding:18px 20px}
+  .runtime-name{width:100%;padding:0 0 12px;border-right:0;border-bottom:1px solid var(--line)}
+  .runtime-stops{grid-template-columns:1fr;gap:14px}
+  .runtime-stops::before{left:17px;right:auto;top:20px;bottom:20px;width:1px;height:auto}
+  .return-group{padding-top:2px}
+  .theater{margin-top:26px}
+  .theater>.contract{padding-bottom:22px}
+  .theater>.observe{padding-top:22px;padding-bottom:22px}
+  .theater>.decision{padding-top:22px}
+  .contract,.observe,.decision{min-height:0}
+  .screen{min-height:232px}
+  .theater-foot{flex-wrap:wrap;gap:16px;margin-top:26px}
+  .beads{order:1;flex-basis:100%}
+  .theater-controls{order:2;width:100%;justify-content:space-between}
+  .exec-lead,.film-lead,.result-lead{align-items:flex-start;gap:16px}
+  .model-mount{height:clamp(320px,52vw,460px)}
+  .viewer-tools{gap:8px}
+  .closing-inner{align-items:flex-start}
 }
 
-@media (max-width:900px){
-  .result-section{grid-template-columns:minmax(0,1fr);gap:28px}
-  .result-copy>p:not(.eyebrow){max-width:58ch}
-  .model-mount{height:340px}
-}
-
+/* ══ 4 · 手机：模型上移、标题落底、工具栏就地 ═════ */
 @media (max-width:760px){
-  .shell,.hero-copy{width:calc(100% - 48px)}
-  html{scroll-padding-top:82px}
-  .header{height:64px}
-  .header-inner{gap:14px}
-  .brand{font-size:21px;gap:8px}
-  .brand-mark{width:24px;height:24px}
-  .brand-mark svg{width:16px;height:16px}
-  .nav{gap:18px;font-size:14px}
-  .github-link{font-size:14px}
-  .section-pad{padding-block:64px}
-  .section-heading{flex-direction:column;align-items:flex-start;gap:16px;margin-bottom:28px}
-  .hero{min-height:600px}
-  .hero-copy{padding-bottom:44px}
-  h1{font-size:clamp(56px,15vw,84px)}
-  .hero-sub{font-size:16px;margin-top:20px;padding-top:16px}
-  .assembly-stage{top:0;left:-14%;right:-14%;width:auto;height:56svh;min-height:300px;max-height:470px}
-  .architecture-section{padding-top:6px}
-  .architecture-board{padding:22px 20px 20px;row-gap:38px}
-  .execution-controls{flex-wrap:wrap;gap:12px;margin-bottom:16px}
-  .work-copy span{font-size:16px}
-  .film-caption{font-size:14px}
-  .closing-actions{gap:10px}
+  .opening{min-height:600px}
+  .assembly-stage{top:0;right:0;width:100%;height:60%;transform-origin:50% 40%;
+    transform:translate3d(0,calc(var(--dock,0)*-4vh),0) scale(calc(1 - var(--dock,0)*.12));
+    opacity:calc(1 - var(--dock,0)*.85)}
+  .model-aura{inset:0 0 8% 0}
+  .model-floor{left:18%;right:18%;bottom:4%;height:46px}
+  .scene-loading{bottom:5%}
+  .hero-scrim{background:linear-gradient(180deg,rgba(244,247,252,0) 30%,rgba(244,247,252,.72) 52%,#f4f7fc 72%)}
+  .hero-foot{gap:14px;padding-bottom:clamp(38px,7vh,62px)}
+  .hero-title{font-size:clamp(54px,11.5vw,86px)}
+  .hero-sub{max-width:26ch;font-size:16px;line-height:1.7}
+  .header-inner{gap:12px}
+  .nav{gap:16px}
+  .nav a{font-size:14px}
+  .github-link{padding:7px 11px}
+  .film-figure video{border-radius:18px}
+  .records>summary{padding:14px 16px}
+  .record-content{padding:0 16px 16px}
+  .workspace-tabs{display:flex;overflow-x:auto;scrollbar-width:none}
+  .workspace-tabs::-webkit-scrollbar{display:none}
+  .workspace-tab{flex:0 0 auto;min-width:108px}
+  .workspace-display.grid{aspect-ratio:4/3}
+  .workspace-transport{flex-wrap:wrap}
+  .viewer{border-radius:22px}
+  .footer-top{flex-wrap:wrap;gap:10px 18px;padding:22px 0}
 }
 
-@media (max-width:640px){
-  .shell,.hero-copy{width:calc(100% - 36px)}
-  .header{height:60px}
-  .nav{gap:16px;font-size:14px}
+/* ══ 5 · 小屏 ════════════════════════════════════ */
+@media (max-width:620px){
+  body{font-size:16px;line-height:1.7}
+  .hero-foot{padding-bottom:34px}
+  .section-lead{margin-bottom:26px}
+  .section-lead h2{font-size:clamp(28px,7.6vw,34px);line-height:1.12}
+  .lead{margin-top:14px;font-size:16px}
+  .eyebrow{letter-spacing:.1em}
+  .arch-section,.execution-section,.film-section,.result-section{padding-block:52px}
+  .closing{padding-block:56px}
+  .arch-input{padding:10px 12px}
+  .planner-title{font-size:20px}
+  .planner-sub{font-size:16px;max-width:100%}
+  .router{width:min(252px,74vw)}
+  .router-core{width:80%}
+  .gate{padding:12px 14px}
+  .runtime{padding:16px}
+  .contract-goal{font-size:clamp(20px,5.4vw,24px)}
+  .contract-io{margin-top:16px}
+  .screen{min-height:208px;padding:40px 12px 12px}
+  .screen-canvas{min-height:94px}
+  .part{width:38px;height:38px}
+  .choice-row{padding:8px 10px 10px}
+  .local-choice{gap:6px}
+  .result-line{margin-top:16px;padding-top:14px;gap:10px;flex-wrap:wrap}
+  .result-line strong{font-size:17px}
+  .bead span{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;line-height:1.35;padding-right:2px}
+  .theater-controls{gap:8px}
+  .ghost{font-size:14px}
+  .icon-btn{width:42px;height:42px}
+  .viewer-tools{position:relative;inset:auto;padding:14px 14px 0}
+  .seg button{padding:7px 11px}
+  .model-mount{height:clamp(248px,66vw,340px);margin-top:8px}
+  .viewer::before{top:46%}
+  .viewer-readout{padding:0 14px 10px}
+  .viewer-readout strong{font-size:22px}
+  .gear-controls{padding:0 14px 14px}
+  .model-transport{padding:12px 14px;flex-wrap:wrap}
+  #case-seek,.model-transport input{flex:1 1 100%;order:4}
+  .chapter-jumps{grid-template-columns:1fr;gap:8px}
+  .chapter-jumps button{padding:12px 14px}
   .github-link span{display:none}
-  .github-link{padding:8px;margin-right:-8px}
-  #architecture-model-slot{width:100%;height:150px;margin-left:0}
-  .arch-planning{grid-template-columns:minmax(0,1fr)}
-  .arch-planning>.arch-node{padding:14px 2px}
-  .arch-planning>.arch-node+.arch-node{border-left:0;border-top:1px solid var(--line)}
-  .arch-lanes{grid-template-columns:minmax(0,1fr)}
-  .arch-lane{grid-template-columns:40px minmax(0,1fr) 22px;padding:16px 14px;gap:12px}
-  .arch-runtime{grid-template-columns:minmax(0,1fr);gap:12px;padding:16px 18px}
-  .runtime-exchange{justify-content:flex-start}
-  .arch-closeout{grid-template-columns:minmax(0,1fr)}
-  .execution-plan{display:block;padding:20px 18px 22px}
-  .goal-ticket{margin-top:18px;padding:16px}
-  .goal-ticket>strong{font-size:19px}
-  .goal-input dd{font-size:16px}
-  .plan-state{margin-top:16px}
-  .execution-work{padding:20px 18px}
-  .work-heading{gap:10px;margin-bottom:16px}
-  .work-copy strong{font-size:19px}
-  .play-button{width:38px;height:38px}
-  .local-workspace{grid-template-columns:minmax(0,1fr);gap:18px}
-  .mini-app{height:210px}
-  .decision-panel{gap:12px}
-  .local-choice{grid-template-columns:minmax(0,1fr);height:auto;gap:0}
-  .choice-row{grid-template-areas:'lab val' 'bar bar';grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:12px;row-gap:7px;height:auto;padding:11px 0;border-top:1px solid var(--line)}
-  .choice-row:first-child{border-top:0;padding-top:0}
-  .choice-label{grid-area:lab;font-size:16px}
-  .choice-value{grid-area:val;font-size:16px}
-  .choice-track{grid-area:bar;display:block;height:8px;min-height:0;border-bottom:0;border-radius:2px;background:var(--sunken);overflow:hidden}
-  .choice-bar{width:var(--score,0%);height:100%;max-width:none;border-radius:2px;transform-origin:left;animation-name:bar-in-x}
-  .choice-row.selected .choice-bar::after{display:none}
-  .selection-result{padding-top:12px}
-  .local-receipt{font-size:15px;align-items:flex-start;margin-top:14px;padding-top:14px}
-  .receipt-icon{margin-top:1px}
-  .feedback-badge{display:none}
-  .execution-bottom{flex-wrap:wrap;gap:12px;padding:14px 18px}
-  .action-beads{flex-basis:100%;gap:14px}
-  .action-bead{font-size:14px;min-height:28px}
-  .execution-flow{width:100%;justify-content:space-between;gap:10px}
-  .execution-flow>span{font-size:14px;padding-bottom:7px}
-  .film-wrap{border-radius:5px}
-  .film-caption{flex-direction:column;gap:6px}
-  .execution-records>summary{padding:14px 16px;gap:12px}
-  .record-icon{width:36px;height:36px}
-  .record-content{padding:0 14px 16px}
-  .workspace-toolbar{flex-wrap:wrap;gap:10px;padding:12px 14px}
-  .workspace-title-row span{display:none}
-  .workspace-display{aspect-ratio:16/10}
-  .workspace-tabs{display:flex;overflow-x:auto;scrollbar-width:thin}
-  .workspace-tab{flex:0 0 auto;min-width:104px;padding:13px 10px;justify-content:flex-start;text-align:left}
-  .workspace-tab img{display:none}
-  .workspace-transport{flex-wrap:wrap;gap:10px;padding:12px 14px}
-  .workspace-transport input{order:4;flex:1 1 100%}
-  .chapter-jumps{gap:8px;margin-top:12px}
-  .case-note{font-size:14px}
-  .result-section{gap:24px}
-  .result-copy h2{font-size:32px}
-  .result-toolbar{flex-wrap:wrap;gap:10px;padding:12px 14px}
-  .view-switch,.view-tools{gap:12px}
-  .result-toolbar button{font-size:14px;padding:4px 0}
-  .model-mount{height:280px}
-  .model-readout{padding:0 14px 10px;font-size:14px}
-  .model-readout strong{font-size:20px}
-  .gear-controls{grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;padding:0 14px 12px}
-  .gear-controls button{min-height:38px}
-  .model-transport{flex-wrap:wrap;padding:12px 14px}
-  .model-transport input{order:4;flex:1 1 100%}
-  .closing h2{font-size:30px}
-  .footer-top{gap:14px}
-  .footer-tag{display:none}
-  .footer-bottom{flex-direction:column;gap:6px}
-  .source-copy{font-size:14px}
+  .nav{gap:12px}
+  .closing-actions{width:100%}
+  .btn{flex:1 1 auto;justify-content:center;padding:12px 18px}
+  .footer-bottom{flex-wrap:wrap;gap:4px 18px;padding-top:16px}
 }
 
-@media (max-width:520px){
-  .shell,.hero-copy{width:calc(100% - 32px)}
-  .nav{display:none}
-  .hero{min-height:560px}
-  .hero-kicker{font-size:14px;letter-spacing:.12em}
-  .assembly-stage{left:-18%;right:-18%;height:52svh;min-height:270px}
-  #architecture-model-slot{height:132px}
-  .architecture-board{padding:20px 16px 18px;row-gap:34px}
-  .arch-planning>.arch-node{grid-template-columns:36px minmax(0,1fr);gap:2px 12px}
-  .arch-planning strong{font-size:17px}
-  .routing-core{min-height:300px;padding:32px 14px 24px}
-  .routing-core::before{width:120px;height:120px}
-  .routing-core::after{width:176px;height:176px}
-  .routing-core>strong{font-size:28px}
-  .router-selection strong{font-size:16px}
-  .arch-evidence{padding:14px 16px}
-  .arch-evidence strong{font-size:16px}
-  .arch-return-label{padding:14px 16px}
-  .boundary-label{font-size:14px;gap:12px}
-  .mini-app{height:190px}
-  .work-tag{font-size:14px}
-  .section-pad{padding-block:56px}
-  .workspace-tab{min-width:96px}
-  .workspace-display{aspect-ratio:4/3}
-  .case-note{line-height:1.75}
-  .model-mount{height:250px}
-  .result-copy h2{font-size:29px}
-  .closing h2{font-size:28px}
-  .closing-note{font-size:16px}
-  .closing-actions .button{flex:1 1 100%}
-  .footer-top{flex-wrap:wrap;row-gap:8px}
-  .footer .brand{font-size:20px}
+/* ══ 6 · 小屏微调 ════════════════════════════════ */
+@media (max-width:460px){
+  .brand-word{font-size:16px}
+  .brand-mark{width:26px;height:26px;border-radius:8px}
+  .hero-sub{max-width:23ch}
+  .arch-planner{padding:22px 18px 24px}
+  .router-capsule b{font-size:14px}
+  .runtime-stops li strong{font-size:14px}
+  .screen-search{font-size:14px}
+  .beads{gap:6px}
+  .viewer-readout{gap:18px}
+  .seg{padding:4px}
+  .seg button{padding:7px 9px}
+  .btn{flex:1 1 100%}
+  .footer-top-link{font-size:14px}
 }
 
-@media (max-width:400px){
-  .brand{font-size:20px}
-  .hero-copy{padding-bottom:32px}
-  h1{font-size:clamp(48px,17vw,62px)}
-  .assembly-stage{height:50svh}
-  .execution-flow{gap:6px}
-  .work-copy strong{font-size:18px}
-  .play-button{width:36px;height:36px}
-  .mini-app{height:170px}
-  .result-toolbar{gap:8px}
-  .view-switch,.view-tools{gap:10px}
-  .model-mount{height:230px}
-  .gear-controls{grid-template-columns:repeat(4,minmax(0,1fr))}
+/* ══ 7 · 横屏短屏 ════════════════════════════════ */
+@media (max-height:560px) and (orientation:landscape){
+  .opening{min-height:460px}
+  .assembly-stage{width:56%;height:96%}
+  .hero-foot{padding-bottom:28px;gap:10px}
+  .hero-title{font-size:clamp(44px,7.4vw,78px)}
+  .hero-sub{max-width:44ch;font-size:16px}
+  .arch-section,.execution-section,.film-section,.result-section{padding-block:44px}
 }
 
-@media (max-height:820px) and (min-width:1001px){
-  .hero{min-height:600px}
-  .hero-copy{padding-bottom:52px}
-  h1{font-size:clamp(60px,7.6vw,104px)}
-  .assembly-stage{top:0;height:88svh;max-height:720px}
-  .hero-sub{margin-top:18px;padding-top:14px}
-  .model-aura{bottom:2%}
+/* ══ 8 · 触屏：去掉悬停位移，补足点按热区 ════════ */
+@media (hover:none){
+  .gate:hover{background:rgba(255,255,255,.42)}
+  .gate[aria-pressed=true]:hover{background:rgba(255,255,255,.94)}
+  .nav a::after{display:none}
+  .icon-btn:hover{transform:none}
+  .btn:hover{background:rgba(255,255,255,.86)}
+  .btn.primary:hover{background:var(--ink)}
+  .round-play:hover{background:#f3f6fb;color:var(--ink)}
 }
 
-@media (prefers-reduced-motion:reduce){
-  html{scroll-behavior:auto}
-  *,*::before,*::after{animation:none!important;transition:none!important}
-  .motion-enabled [data-reveal]{opacity:1;transform:none}
-  #architecture-model-slot{display:none}
-  .architecture-heading{min-height:0}
+@media (pointer:coarse){
+  .seg button{min-height:40px}
+  .gear-controls button{min-height:40px}
+  .round-play{width:40px;height:40px}
+  .chapter-jumps button{padding-block:13px}
+  .record-toggle{width:40px;height:40px;display:grid;place-items:center}
 }
